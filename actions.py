@@ -54,4 +54,4 @@ class MoveCursorAction(MovementAction):
         if not engine.game_map.in_bounds(dest_x, dest_y):
             return  # Destination is out of bounds.
         cursor.move(self.dx, self.dy)
-        engine.update_fov()
+
