@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import tcod
 
+import tile_types
 from engine import Engine
 from entity import Entity
 from input_handlers import EventHandler
-from procgen import generate_dungeon
+from procgen import generate_dungeon, generate_empty
+
 
 def main() -> None:
     screen_width = 45
@@ -23,27 +25,27 @@ def main() -> None:
 
     event_handler = EventHandler()
 
-    player = Entity(int(map_width / 2), int(map_height / 2), "@", (255, 255, 255))
-    npc = Entity(int(map_width / 2 - 5), int(map_height / 2), "@", (255, 255, 0))
-    entities = {npc, player}
+    player = Entity(int(map_width / 2), int(map_height / 2), "@", (100, 100, 100))
 
-    game_map = generate_dungeon(
-        map_width=map_width,
-        map_height=map_height,
-        room_min_size=room_min_size,
-        room_max_size=room_max_size,
-        max_rooms=max_rooms,
-        player=player
-    )
+    game_map = generate_empty(map_width=map_width, map_height=map_height, player=player)
 
-    engine = Engine(entities=entities, event_handler=event_handler, game_map=game_map, player=player)
+    # game_map = generate_dungeon(
+    #     map_width=map_width,
+    #     map_height=map_height,
+    #     room_min_size=room_min_size,
+    #     room_max_size=room_max_size,
+    #     max_rooms=max_rooms,
+    #     player=player
+    # )
+
+    engine = Engine(event_handler=event_handler, game_map=game_map, player=player)
 
     with tcod.context.new_terminal(
-        screen_width,
-        screen_height,
-        tileset=tileset,
-        title="Advanced War",
-        vsync=True,
+            screen_width,
+            screen_height,
+            tileset=tileset,
+            title="Advanced War",
+            vsync=True,
     ) as context:
         root_console = tcod.Console(screen_width, screen_height, order="F")
         while True:
@@ -52,6 +54,7 @@ def main() -> None:
             events = tcod.event.wait()
 
             engine.handle_events(events)
+            context.present(root_console)
 
 
 if __name__ == "__main__":

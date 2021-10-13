@@ -42,3 +42,15 @@ class MovementAction(Action):
             return  # Destination is blocked by a tile.
 
         entity.move(self.dx, self.dy)
+        engine.update_fov()
+
+
+class MoveCursorAction(MovementAction):
+    # only checks inbounds
+    def perform(self, engine: Engine, cursor: Entity) -> None:
+        dest_x = entity.x + self.dx
+        dest_y = entity.y + self.dy
+
+        if not engine.game_map.in_bounds(dest_x, dest_y):
+            return  # Destination is out of bounds.
+        cursor.move(self.dx, self.dy)

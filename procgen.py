@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import numpy as np
+
 import tile_types
 import tcod
 import random
@@ -64,6 +66,16 @@ def tunnel_between(
         yield x, y
 
 
+def generate_empty(
+        map_width: int,
+        map_height: int,
+        player: Entity,
+) -> GameMap:
+    dungeon = GameMap(map_width, map_height, entities=[player])
+    dungeon.tiles = np.full((map_width, map_height), fill_value=tile_types.floor, order="F")
+    player.x, player.y = int(map_width/2), int(map_height/2)
+    return dungeon
+
 def generate_dungeon(
         max_rooms: int,
         room_min_size: int,
@@ -75,7 +87,7 @@ def generate_dungeon(
     """
     Generate a new dungeon map of interconnected rectangular rooms.
     """
-    dungeon = GameMap(map_width, map_height)
+    dungeon = GameMap(map_width, map_height, entities=[player])
     rooms: List[RectangularRoom] = []
 
     for r in range(max_rooms):

@@ -14,8 +14,8 @@ graphic_dt = np.dtype(
 # Tile struct used for statically defined tile data.
 tile_dt = np.dtype(
     [
-        ("move", np.bool),  # True if this tile can be walked over.
-        ("vision", np.bool),  # True if this tile doesn't block FOV.
+        ("move", np.int),  # movement cost for this tile.
+        ("vision", np.int),  # True if this tile doesn't block FOV.
         ("dark", graphic_dt),  # Graphics for when this tile is not in FOV.
         ("light", graphic_dt)  # when in view
     ]
@@ -46,5 +46,5 @@ wall = new_tile(
     move=0,
     vision=0,
     dark=(ord("#"), (255, 255, 255), (0, 0, 100)),
-    light=(ord("#"), (255,255,255), (130, 110, 50)),
+    light=(ord("#"), (255, 255, 255), (130, 110, 50)),
 )
