@@ -8,15 +8,17 @@ from tcod.console import Console
 import tile_types
 
 if TYPE_CHECKING:
-    from entity import Entity
+    from entity import Entity, Cursor
 
 
 class GameMap:
-    def __init__(self, width: int, height: int, entities: Iterable[Entity] = ()):
+    def __init__(self, width: int, height: int, cursor: Cursor, entities: Iterable[Entity] = ()):
         self.width, self.height = width, height
         self.tiles = np.full((width, height), fill_value=tile_types.wall, order="F")
 
-        self.entities = set(entities) # initialise the given entities into a set. entities belong to the map now
+        self.entities = set(entities)  # initialise the given entities into a set. entities belong to the map now
+
+        self.cursor = cursor  # map tracks the location of the cursor
 
         self.visible = np.full((width, height), fill_value=False, order="F")  # track which tiles are visible now
         # self.explored = np.full((width, height), fill_value=False, order="F")  # track tiles we've seen - not for AW
@@ -24,6 +26,21 @@ class GameMap:
     def in_bounds(self, x: int, y: int) -> bool:
         """Return True if x and y are inside of the bounds of this map."""
         return 0 <= x < self.width and 0 <= y < self.height
+
+    def show_cursor(self, console: Console):
+        cx, cy = self.cursor.x, self.cursor.y
+        on_visible = "light" if self.visible[cx, cy] else "dark"
+        for entity in self.entities:
+            if (entity.x, entity.y) == (cx, cy):
+                console.print(cx, cy, string=entity.char, bg=entity.color, fg=tuple(self.tiles[cx, cy][on_visible]["bg"]))
+                return
+        else:
+            print(type(self.tiles[cx, cy][on_visible]["ch"]))
+            print(self.tiles[cx, cy][on_visible]["fg"])
+            console.print(x=cx, y=cy,
+                          string=chr(self.tiles[cx, cy][on_visible]["ch"]),
+                          bg=tuple(self.tiles[cx, cy][on_visible]["fg"]),
+                          fg=tuple(self.tiles[cx, cy][on_visible]["bg"]))
 
     def render(self, console: Console) -> None:
         """
@@ -52,4 +69,5 @@ class GameMap:
             # Only show visible entities
             if self.visible[entity.x, entity.y]:
                 console.print(x=entity.x, y=entity.y, string=entity.char, fg=entity.color)
-            # print(entity.x, entity.y, entity)
+
+        self.show_cursor(console)

@@ -3,7 +3,7 @@ import tcod
 
 import tile_types
 from engine import Engine
-from entity import Entity
+from entity import Entity, Cursor
 from input_handlers import EventHandler
 from procgen import generate_dungeon, generate_empty
 
@@ -25,18 +25,18 @@ def main() -> None:
 
     event_handler = EventHandler()
 
-    player = Entity(int(map_width / 2), int(map_height / 2), "@", (100, 100, 100))
+    player = Cursor(int(map_width / 2), int(map_height / 2), "@", (100, 100, 100))
 
-    game_map = generate_empty(map_width=map_width, map_height=map_height, player=player)
+    # game_map = generate_empty(map_width=map_width, map_height=map_height, player=player)
 
-    # game_map = generate_dungeon(
-    #     map_width=map_width,
-    #     map_height=map_height,
-    #     room_min_size=room_min_size,
-    #     room_max_size=room_max_size,
-    #     max_rooms=max_rooms,
-    #     player=player
-    # )
+    game_map = generate_dungeon(
+        map_width=map_width,
+        map_height=map_height,
+        room_min_size=room_min_size,
+        room_max_size=room_max_size,
+        max_rooms=max_rooms,
+        player=player
+    )
 
     engine = Engine(event_handler=event_handler, game_map=game_map, player=player)
 

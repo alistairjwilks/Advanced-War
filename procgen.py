@@ -87,7 +87,7 @@ def generate_dungeon(
     """
     Generate a new dungeon map of interconnected rectangular rooms.
     """
-    dungeon = GameMap(map_width, map_height, entities=[player])
+    dungeon = GameMap(map_width, map_height, entities=[], cursor=player)
     rooms: List[RectangularRoom] = []
 
     for r in range(max_rooms):
@@ -109,6 +109,8 @@ def generate_dungeon(
 
         if len(rooms) == 0:
             # place player in the starting room
+            infantry = Entity(int(map_width / 2), int(map_height / 2), "i", (100, 100, 100))
+            dungeon.entities.add(infantry)
             player.x, player.y = new_room.center
         else:
             # dig out a tunnel connecting this to the previous room

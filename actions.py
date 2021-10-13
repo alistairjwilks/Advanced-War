@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Entity
+    from entity import Entity, Cursor
 
 
 class Action:
@@ -47,10 +47,11 @@ class MovementAction(Action):
 
 class MoveCursorAction(MovementAction):
     # only checks inbounds
-    def perform(self, engine: Engine, cursor: Entity) -> None:
-        dest_x = entity.x + self.dx
-        dest_y = entity.y + self.dy
+    def perform(self, engine: Engine, cursor: Cursor) -> None:
+        dest_x = cursor.x + self.dx
+        dest_y = cursor.y + self.dy
 
         if not engine.game_map.in_bounds(dest_x, dest_y):
             return  # Destination is out of bounds.
         cursor.move(self.dx, self.dy)
+        engine.update_fov()

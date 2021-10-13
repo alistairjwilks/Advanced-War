@@ -24,3 +24,7 @@ class Creature(Entity):
 
     def __init__(self, x: int, y: int, char: str, color: Tuple[int, int, int]):
         super().__init__(x, y, char, color)
+
+
+class Cursor(Entity):
+    pass
