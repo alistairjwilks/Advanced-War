@@ -2,6 +2,8 @@ from typing import Tuple
 
 import numpy as np  # type: ignore
 
+
+
 # Tile graphics structured type compatible with Console.tiles_rgb.
 graphic_dt = np.dtype(
     [
@@ -31,7 +33,6 @@ def new_tile(
 ) -> np.ndarray:
     """Helper function for defining individual tile types """
     return np.array((move, vision, dark, light), dtype=tile_dt)
-
 
 # SHROUD - unseen/unexplored tiles
 SHROUD = np.array((ord(" "), (255, 255, 255), (0, 0, 0)), dtype=graphic_dt)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple, Optional
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -8,12 +8,21 @@ if TYPE_CHECKING:
 
 
 class Action:
-    def perform(self, engine: Engine, entity: Entity) -> None:
+    def __init__(self, entity: Entity) -> None:
+        super().__init__()
+        self.entity = entity
+
+    @property
+    def engine(self) -> Engine:
+        """ Return the engine I belong to """
+        return self.entity.gamemap.engine
+
+    def perform(self) -> None:
         """Perform this action with the objects needed to determine its scope.
 
-        `engine` is the scope this action is being performed in.
+        `self.engine` is the scope this action is being performed in.
 
-        `entity` is the object performing the action.
+        `self.entity` is the object performing the action.
 
         This method must be overridden by Action subclasses.
         """
@@ -21,37 +30,57 @@ class Action:
 
 
 class EscapeAction(Action):
-    def perform(self, engine: Engine, entity: Entity) -> None:
+    def perform(self) -> None:
         raise SystemExit()
 
 
-class MovementAction(Action):
-    def __init__(self, dx: int, dy: int):
-        super().__init__()
-
+class ActionWithDirection(Action):
+    def __init__(self, entity: Entity, dx: int, dy: int):
+        super().__init__(entity)
         self.dx = dx
         self.dy = dy
 
-    def perform(self, engine: Engine, entity: Entity) -> None:
-        dest_x = entity.x + self.dx
-        dest_y = entity.y + self.dy
+    @property
+    def dest_xy(self) -> Tuple[int, int]:
+        """ Destination of the action"""
+        return self.entity.x + self.dx, self.entity.y + self.dy
 
-        if not engine.game_map.in_bounds(dest_x, dest_y):
+    @property
+    def blocking_entity(self) -> Optional[Entity]:
+        """ Return the entity at the action's destination (if any)"""
+        return self.engine.game_map.get_blocking_entity_at_location(*self.dest_xy)
+
+    def perform(self) -> None:
+        raise NotImplementedError()
+
+
+class MovementAction(ActionWithDirection):
+    def perform(self) -> None:
+        dest_x, dest_y = self.dest_xy
+
+        if not self.engine.game_map.in_bounds(dest_x, dest_y):
             return  # Destination is out of bounds.
-        if not engine.game_map.tiles["move"][dest_x, dest_y]:
+        if not self.engine.game_map.tiles["move"][dest_x, dest_y]:
             return  # Destination is blocked by a tile.
+        if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
+            return  # blocked by another unit
 
-        entity.move(self.dx, self.dy)
-        engine.update_fov()
+        self.entity.move(self.dx, self.dy)
 
 
-class MoveCursorAction(MovementAction):
+class MoveCursorAction(ActionWithDirection):
     # only checks inbounds
-    def perform(self, engine: Engine, cursor: Cursor) -> None:
-        dest_x = cursor.x + self.dx
-        dest_y = cursor.y + self.dy
+    def perform(self) -> None:
+        dest_x, dest_y = self.dest_xy
 
-        if not engine.game_map.in_bounds(dest_x, dest_y):
+        if not self.engine.game_map.in_bounds(dest_x, dest_y):
             return  # Destination is out of bounds.
-        cursor.move(self.dx, self.dy)
+        self.engine.game_map.cursor.move(self.dx, self.dy)
 
+
+class SelectAction(Action):
+    def perform(self) -> None:
+        cursor = self.engine.game_map.cursor
+        for entity in self.engine.game_map.entities:
+            if (entity.x, entity.y) == (cursor.x, cursor.y):
+                cursor.selection = entity

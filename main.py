@@ -3,9 +3,9 @@ import tcod
 
 import tile_types
 from engine import Engine
-from entity import Entity, Cursor
-from input_handlers import EventHandler
-from procgen import generate_dungeon, generate_empty
+from entity import Cursor
+import entity_factories
+from procgen import generate_dungeon
 
 
 def main() -> None:
@@ -23,22 +23,22 @@ def main() -> None:
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
 
-    event_handler = EventHandler()
-
-    player = Cursor(int(map_width / 2), int(map_height / 2), "@", (100, 100, 100))
+    engine = Engine()
 
     # game_map = generate_empty(map_width=map_width, map_height=map_height, player=player)
 
-    game_map = generate_dungeon(
+    engine.game_map = generate_dungeon(
         map_width=map_width,
         map_height=map_height,
         room_min_size=room_min_size,
         room_max_size=room_max_size,
         max_rooms=max_rooms,
-        player=player
+        engine=engine
     )
 
-    engine = Engine(event_handler=event_handler, game_map=game_map, player=player)
+    player = Cursor(x=int(map_width / 2), y=int(map_height / 2), gamemap=engine.game_map, selection=None)
+
+    engine.update_fov()
 
     with tcod.context.new_terminal(
             screen_width,
@@ -50,10 +50,8 @@ def main() -> None:
         root_console = tcod.Console(screen_width, screen_height, order="F")
         while True:
             engine.render(console=root_console, context=context)
+            engine.event_handler.handle_events()
 
-            events = tcod.event.wait()
-
-            engine.handle_events(events)
             context.present(root_console)
 
 

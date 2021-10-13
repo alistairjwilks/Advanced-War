@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, TYPE_CHECKING
+from typing import Iterable, Optional, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 from tcod.console import Console
@@ -8,39 +8,46 @@ from tcod.console import Console
 import tile_types
 
 if TYPE_CHECKING:
-    from entity import Entity, Cursor
+    from engine import Engine
+    from entity import Entity
 
 
 class GameMap:
-    def __init__(self, width: int, height: int, cursor: Cursor, entities: Iterable[Entity] = ()):
+    def __init__(self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()):
         self.width, self.height = width, height
         self.tiles = np.full((width, height), fill_value=tile_types.wall, order="F")
 
+        self.engine = engine
         self.entities = set(entities)  # initialise the given entities into a set. entities belong to the map now
-
-        self.cursor = cursor  # map tracks the location of the cursor
 
         self.visible = np.full((width, height), fill_value=False, order="F")  # track which tiles are visible now
         # self.explored = np.full((width, height), fill_value=False, order="F")  # track tiles we've seen - not for AW
+
+    def get_blocking_entity_at_location(self, location_x: int, location_y: int) -> Optional[Entity]:
+        for entity in self.entities:
+            if (
+                entity.blocks_movement
+                and entity.x == location_x
+                and entity.y == location_y
+            ):
+                return entity
+        return None
 
     def in_bounds(self, x: int, y: int) -> bool:
         """Return True if x and y are inside of the bounds of this map."""
         return 0 <= x < self.width and 0 <= y < self.height
 
-    def show_cursor(self, console: Console):
-        cx, cy = self.cursor.x, self.cursor.y
-        on_visible = "light" if self.visible[cx, cy] else "dark"
+    def invert_tile(self, x: int, y: int, console: Console):
+        on_visible = "light" if self.visible[x, y] else "dark"
         for entity in self.entities:
-            if (entity.x, entity.y) == (cx, cy):
-                console.print(cx, cy, string=entity.char, bg=entity.color, fg=tuple(self.tiles[cx, cy][on_visible]["bg"]))
+            if (entity.x, entity.y) == (x, y):
+                console.print(x, y, string=entity.char, bg=entity.color, fg=tuple(self.tiles[x, y][on_visible]["bg"]))
                 return
         else:
-            print(type(self.tiles[cx, cy][on_visible]["ch"]))
-            print(self.tiles[cx, cy][on_visible]["fg"])
-            console.print(x=cx, y=cy,
-                          string=chr(self.tiles[cx, cy][on_visible]["ch"]),
-                          bg=tuple(self.tiles[cx, cy][on_visible]["fg"]),
-                          fg=tuple(self.tiles[cx, cy][on_visible]["bg"]))
+            console.print(x=x, y=y,
+                          string=chr(self.tiles[x, y][on_visible]["ch"]),
+                          bg=tuple(self.tiles[x, y][on_visible]["fg"]),
+                          fg=tuple(self.tiles[x, y][on_visible]["bg"]))
 
     def render(self, console: Console) -> None:
         """
@@ -69,5 +76,7 @@ class GameMap:
             # Only show visible entities
             if self.visible[entity.x, entity.y]:
                 console.print(x=entity.x, y=entity.y, string=entity.char, fg=entity.color)
-
-        self.show_cursor(console)
+        cursor = self.engine.game_map.cursor
+        self.invert_tile(cursor.x, cursor.y, console)
+        if cursor.selection:
+            self.invert_tile(cursor.selection.x, cursor.selection.y, console)

@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import numpy as np
 
+import entity_factories
 import tile_types
 import tcod
 import random
 
 from typing import List, Iterator, Tuple, TYPE_CHECKING
+if TYPE_CHECKING:
+    from engine import Engine
 
-from entity import Entity
+from entity import Entity, Cursor
 from game_map import GameMap
 
 
@@ -65,29 +68,23 @@ def tunnel_between(
     for x, y in tcod.los.bresenham((corner_x, corner_y), (x2, y2)).tolist():
         yield x, y
 
-
-def generate_empty(
-        map_width: int,
-        map_height: int,
-        player: Entity,
-) -> GameMap:
-    dungeon = GameMap(map_width, map_height, entities=[player])
-    dungeon.tiles = np.full((map_width, map_height), fill_value=tile_types.floor, order="F")
-    player.x, player.y = int(map_width/2), int(map_height/2)
-    return dungeon
-
 def generate_dungeon(
         max_rooms: int,
         room_min_size: int,
         room_max_size: int,
         map_width: int,
         map_height: int,
-        player: Entity,
+        engine: Engine,
 ) -> GameMap:
     """
     Generate a new dungeon map of interconnected rectangular rooms.
     """
-    dungeon = GameMap(map_width, map_height, entities=[], cursor=player)
+    dungeon = GameMap(
+        engine=engine,
+        width=map_width,
+        height=map_height,
+        entities=[]
+    )
     rooms: List[RectangularRoom] = []
 
     for r in range(max_rooms):
@@ -109,9 +106,7 @@ def generate_dungeon(
 
         if len(rooms) == 0:
             # place player in the starting room
-            infantry = Entity(int(map_width / 2), int(map_height / 2), "i", (100, 100, 100))
-            dungeon.entities.add(infantry)
-            player.x, player.y = new_room.center
+            inf = Entity.spawn(entity_factories.orc, gamemap=dungeon, x=20, y=20)
         else:
             # dig out a tunnel connecting this to the previous room
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
