@@ -14,17 +14,19 @@ class EventHandler(tcod.event.EventDispatch[Action]):
     def __init__(self, engine: Engine):
         self.engine = engine
 
-    def handle_events(self) -> None:
+    def handle_events(self) -> bool:
         for event in tcod.event.wait():
             action = self.dispatch(event)
-
+            did_action = False
             if action is None:
                 continue
 
             action.perform()
-
+            did_action = True
             #            self.engine.handle_enemy_turns()
+
             self.engine.update_fov()  # ?
+            return did_action
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
         raise SystemExit()
@@ -33,7 +35,7 @@ class EventHandler(tcod.event.EventDispatch[Action]):
         action: Optional[Action] = None
 
         key = event.sym
-        cursor = self.engine.game_map.cursor
+        cursor = self.engine.cursor
 
         if key == tcod.event.K_UP:
             action = MoveCursorAction(entity=cursor, dx=0, dy=-1)
@@ -49,13 +51,14 @@ class EventHandler(tcod.event.EventDispatch[Action]):
 
         elif key == tcod.event.K_x:
             if cursor.selection:
-                action = MovementAction(
+                action = BumpAction(
                     entity=cursor.selection,
                     dx=cursor.x - cursor.selection.x,
                     dy=cursor.y - cursor.selection.y
                 )
 
-
+        elif key == tcod.event.K_v:
+            self.engine.handle_enemy_turns()
 
         elif key == tcod.event.K_ESCAPE:
             action = EscapeAction()

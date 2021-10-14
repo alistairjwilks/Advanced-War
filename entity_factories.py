@@ -1,6 +1,22 @@
-from entity import Entity
+from components.ai import TutorialEnemy
+from components.fighter import Fighter
+from entity import Cursor, Actor
 
-player = Entity(char="@", color=(255, 255, 255), name="Player", blocks_movement=True)
+player = Cursor() # we're not using a player actor
 
-orc = Entity(char="o", color=(63, 127, 63), name="Orc", blocks_movement=True)
-troll = Entity(char="T", color=(0, 127, 0), name="Troll", blocks_movement=True)
+orc = Actor(
+    char="o",
+    color=(63, 127, 63),
+    name="Orc",
+    ai_cls=TutorialEnemy,
+    fighter=Fighter(hp=10, defense=0, power=3, vision=4),
+)
+
+
+troll = Actor(
+    char="T",
+    color=(0, 127, 0),
+    name="Troll",
+    ai_cls=TutorialEnemy,
+    fighter=Fighter(hp=20, defense=1, power=4, vision=2)
+)

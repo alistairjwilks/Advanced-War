@@ -48,24 +48,50 @@ class ActionWithDirection(Action):
     @property
     def blocking_entity(self) -> Optional[Entity]:
         """ Return the entity at the action's destination (if any)"""
-        return self.engine.game_map.get_blocking_entity_at_location(*self.dest_xy)
+        return self.engine.gamemap.get_blocking_entity_at_location(*self.dest_xy)
+
+    @property
+    def target_actor(self) -> Optional[Actor]:
+        """ Returns actor at the destination"""
+        return self.engine.gamemap.get_actor_at_location(*self.dest_xy)
 
     def perform(self) -> None:
         raise NotImplementedError()
+
+
+class MeleeAction(ActionWithDirection):
+    def perform(self) -> None:
+        target = self.blocking_entity
+
+        if not target:
+            return
+
+        print(
+            f"The {self.entity.name} lays down suppressing fire at the {target.name}!"
+        )
 
 
 class MovementAction(ActionWithDirection):
     def perform(self) -> None:
         dest_x, dest_y = self.dest_xy
 
-        if not self.engine.game_map.in_bounds(dest_x, dest_y):
+        if not self.engine.gamemap.in_bounds(dest_x, dest_y):
             return  # Destination is out of bounds.
-        if not self.engine.game_map.tiles["move"][dest_x, dest_y]:
+        if not self.engine.gamemap.tiles["move"][dest_x, dest_y]:
             return  # Destination is blocked by a tile.
-        if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
+        if self.engine.gamemap.get_blocking_entity_at_location(dest_x, dest_y):
             return  # blocked by another unit
 
         self.entity.move(self.dx, self.dy)
+        self.engine.update_fov()
+
+
+class BumpAction(ActionWithDirection):
+    def perform(self) -> None:
+        if self.blocking_entity:
+            return MeleeAction(self.entity, self.dx, self.dy).perform()
+        else:
+            return MovementAction(self.entity, self.dx, self.dy).perform()
 
 
 class MoveCursorAction(ActionWithDirection):
@@ -73,14 +99,22 @@ class MoveCursorAction(ActionWithDirection):
     def perform(self) -> None:
         dest_x, dest_y = self.dest_xy
 
-        if not self.engine.game_map.in_bounds(dest_x, dest_y):
+        if not self.engine.gamemap.in_bounds(dest_x, dest_y):
             return  # Destination is out of bounds.
-        self.engine.game_map.cursor.move(self.dx, self.dy)
+        self.entity.move(self.dx, self.dy)
 
 
 class SelectAction(Action):
     def perform(self) -> None:
-        cursor = self.engine.game_map.cursor
-        for entity in self.engine.game_map.entities:
+        cursor = self.engine.cursor
+        for entity in self.engine.gamemap.entities - {self.entity}:
             if (entity.x, entity.y) == (cursor.x, cursor.y):
                 cursor.selection = entity
+                return
+        cursor.selection = None
+        return
+
+
+class WaitAction(Action):
+    def perform(self) -> None:
+        pass

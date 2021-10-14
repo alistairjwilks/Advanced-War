@@ -106,7 +106,9 @@ def generate_dungeon(
 
         if len(rooms) == 0:
             # place player in the starting room
-            inf = Entity.spawn(entity_factories.orc, gamemap=dungeon, x=20, y=20)
+            # Entity.spawn(entity_factories.player, gamemap=dungeon, x=20, y=20)
+            Entity.spawn(entity_factories.orc, gamemap=dungeon, x=20, y=20)
+            Entity.spawn(entity_factories.orc, gamemap=dungeon, x=23, y=20)
         else:
             # dig out a tunnel connecting this to the previous room
             for x, y in tunnel_between(rooms[-1].center, new_room.center):

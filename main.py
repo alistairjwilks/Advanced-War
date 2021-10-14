@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import tcod
 
+import entity
 import tile_types
 from engine import Engine
 from entity import Cursor
@@ -22,12 +23,13 @@ def main() -> None:
     tileset = tcod.tileset.load_tilesheet(
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
+    player = entity_factories.player
 
-    engine = Engine()
+    engine = Engine(player)
 
-    # game_map = generate_empty(map_width=map_width, map_height=map_height, player=player)
+    # gamemap = generate_empty(map_width=map_width, map_height=map_height, player=player)
 
-    engine.game_map = generate_dungeon(
+    engine.gamemap = generate_dungeon(
         map_width=map_width,
         map_height=map_height,
         room_min_size=room_min_size,
@@ -35,9 +37,7 @@ def main() -> None:
         max_rooms=max_rooms,
         engine=engine
     )
-
-    player = Cursor(x=int(map_width / 2), y=int(map_height / 2), gamemap=engine.game_map, selection=None)
-
+    player.place(21,21,engine.gamemap)
     engine.update_fov()
 
     with tcod.context.new_terminal(
@@ -48,9 +48,10 @@ def main() -> None:
             vsync=True,
     ) as context:
         root_console = tcod.Console(screen_width, screen_height, order="F")
+        engine.render(console=root_console, context=context)
         while True:
-            engine.render(console=root_console, context=context)
-            engine.event_handler.handle_events()
+            if engine.event_handler.handle_events():
+                engine.render(console=root_console, context=context)
 
             context.present(root_console)
 

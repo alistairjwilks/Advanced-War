@@ -1,7 +1,12 @@
-import copy
-from typing import Optional, Tuple, TypeVar, TYPE_CHECKING
+from __future__ import annotations
 
-from game_map import GameMap
+import copy
+from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from components.ai import BaseAI
+    from components.fighter import Fighter
+    from game_map import GameMap
 
 T = TypeVar("T", bound="Entity")
 
@@ -14,7 +19,7 @@ class Entity:
 
     def __init__(
             self,
-            gamemap: Optional[GameMap] = None,
+            gamemap: GameMap = None,
             x: int = 0,
             y: int = 0,
             char: str = "?",
@@ -28,9 +33,11 @@ class Entity:
         self.color = color
         self.name = name
         self.blocks_movement = blocks_movement
-        if gamemap:
-            self.gamemap = gamemap
-            gamemap.entities.add(self)
+        self.gamemap = gamemap
+        if self.gamemap:
+            self.gamemap.entities.add(self)
+        self.selection = None
+        self.vision = 0
 
     def spawn(self: T, gamemap: GameMap, x: int, y: int) -> T:
         """Spawn a copy of this instance at the given location"""
@@ -46,7 +53,7 @@ class Entity:
         self.x = x
         self.y = y
         if gamemap:  # if a new map is given
-            if hasattr(self, "gamemap"):  # if we are already on a map
+            if self.gamemap:  # if we are already on a map
                 self.gamemap.entities.remove(self)  # remove ourself from it
             # then set current map to the given map
             self.gamemap = gamemap
@@ -62,11 +69,41 @@ class Entity:
         self.y = dest_y
 
 
-class Cursor(Entity):
-    def __init__(self, x: int, y: int, gamemap: GameMap, selection: Optional[Entity] = None):
-        super().__init__(x=x, y=y, char=" ", color=(1, 1, 1))
-        self.selection = selection
-        self.gamemap = gamemap
-        gamemap.cursor = self
+class Actor(Entity):
+    def __init__(
+            self,
+            *,
+            x: int = 0,
+            y: int = 0,
+            char: str = "?",
+            color: tuple[int, int, int] = (255, 255, 255),
+            name: str = "<Unnamed>",
+            ai_cls: Type[BaseAI],
+            fighter: Fighter,
+    ):
+        super().__init__(
+            x=x,
+            y=y,
+            char=char,
+            color=color,
+            name=name,
+            blocks_movement=True,
+        )
 
-    pass
+        self.ai: Optional[BaseAI] = ai_cls(self)
+
+        self.fighter = fighter
+        self.fighter.entity = self
+        self.vision = fighter.vision
+
+    @property
+    def is_alive(self) -> bool:
+        """ return true as long as the actor can still act"""
+        return bool(self.ai)
+
+
+class Cursor(Entity):
+    def __init__(self):
+        super().__init__()
+        self.selection = None
+
