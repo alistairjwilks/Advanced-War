@@ -12,6 +12,13 @@ orc = Actor(
     fighter=Fighter(hp=10, defense=0, power=3, vision=4),
 )
 
+infantry = Actor(
+    char="i",
+    color=(255, 0, 0),
+    name="Infantry",
+    ai_cls=TutorialEnemy,
+    fighter=Fighter(hp=100, defense=0, power=3, vision=4),
+)
 
 troll = Actor(
     char="T",

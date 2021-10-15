@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class GameMap:
     def __init__(self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()):
         self.width, self.height = width, height
-        self.tiles = np.full((width, height), fill_value=tile_types.wall, order="F")
+        self.tiles = np.full((width, height), fill_value=tile_types.mountain, order="F")
 
         self.engine = engine
         self.entities = set(entities)  # initialise the given entities into a set. entities belong to the map now

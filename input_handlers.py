@@ -58,7 +58,8 @@ class EventHandler(tcod.event.EventDispatch[Action]):
                 )
 
         elif key == tcod.event.K_v:
-            self.engine.handle_enemy_turns()
+            action = EnemyAction(cursor)
+
 
         elif key == tcod.event.K_ESCAPE:
             action = EscapeAction()

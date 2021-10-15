@@ -118,3 +118,11 @@ class SelectAction(Action):
 class WaitAction(Action):
     def perform(self) -> None:
         pass
+
+
+class EnemyAction(Action):
+    def __init__(self, entity: Entity):
+        super().__init__(entity)
+
+    def perform(self) -> None:
+        self.engine.handle_enemy_turns()

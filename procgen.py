@@ -102,17 +102,18 @@ def generate_dungeon(
         # otherwise continue and build the room
 
         # dig the room out of the rock map
-        dungeon.tiles[new_room.inner] = tile_types.floor
+        dungeon.tiles[new_room.inner] = tile_types.plains
 
         if len(rooms) == 0:
             # place player in the starting room
             # Entity.spawn(entity_factories.player, gamemap=dungeon, x=20, y=20)
-            Entity.spawn(entity_factories.orc, gamemap=dungeon, x=20, y=20)
-            Entity.spawn(entity_factories.orc, gamemap=dungeon, x=23, y=20)
+            Entity.spawn(entity_factories.infantry, gamemap=dungeon, x=20, y=20)
+            dungeon.tiles[21, 20] = tile_types.woods
+            Entity.spawn(entity_factories.infantry, gamemap=dungeon, x=23, y=20)
         else:
             # dig out a tunnel connecting this to the previous room
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
-                dungeon.tiles[x, y] = tile_types.floor
+                dungeon.tiles[x, y] = tile_types.plains
 
         rooms.append(new_room)
 

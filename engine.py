@@ -49,3 +49,4 @@ class Engine:
         for entity in set(self.gamemap.actors) - {self.cursor}:
             if entity.ai:
                 entity.ai.perform()
+

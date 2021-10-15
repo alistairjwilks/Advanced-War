@@ -19,6 +19,7 @@ class Fighter(BaseComponent):
         self.power = power
         self.movement = movement
         self.vision = vision
+        
 
     @property  # a getter
     def hp(self) -> int:
@@ -44,4 +45,4 @@ class Fighter(BaseComponent):
 
 
 
-        # TODO add path cost, blockage etc.
+
