@@ -4,7 +4,7 @@ from typing import List, Tuple, TYPE_CHECKING
 import numpy as np
 import tcod
 
-from actions import Action, MeleeAction, MovementAction, WaitAction, BumpAction
+from actions import Action, MeleeAction, MovementAction, WaitAction, BumpAction, UnitEndTurnAction
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
@@ -41,6 +41,14 @@ class BaseAI(Action, BaseComponent):
         return [(index[0], index[1]) for index in path]
 
 
+class UnitAI(BaseAI):
+    def __init__(self, entity: Actor):
+        super().__init__(entity)
+
+    def perform(self) -> None:
+        return UnitEndTurnAction(self.entity).perform()
+
+
 class TutorialEnemy(BaseAI):
     def __init__(self, entity: Actor):
         super().__init__(entity)
@@ -50,7 +58,7 @@ class TutorialEnemy(BaseAI):
         target = self.engine.cursor
         dx = target.x - self.entity.x
         dy = target.y - self.entity.y
-        distance = abs(dx) + abs(dy) # manhattan distance
+        distance = abs(dx) + abs(dy)  # manhattan distance
 
         # if self.engine.gamemap.visible[self.entity.x, self.entity.y]:
 
@@ -64,12 +72,3 @@ class TutorialEnemy(BaseAI):
 
         return WaitAction(self.entity).perform()
 
-
-
-class UnitAI(BaseAI):
-    def __init__(self, entity: Actor):
-        super.__init__(entity)
-        self.path = List[Tuple[int, int]]
-
-    def perform(self) -> None:
-        pass  # HMMMMMMM

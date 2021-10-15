@@ -14,9 +14,10 @@ if TYPE_CHECKING:
 class Engine:
     gamemap: GameMap = None
 
-    def __init__(self, player: Cursor):
+    def __init__(self, player: Cursor, render_mode: str = "none"):
         self.cursor = player
         self.event_handler: EventHandler = EventHandler(self)
+        self.render_mode = render_mode
 
 
     def update_fov(self) -> None:

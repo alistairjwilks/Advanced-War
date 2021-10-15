@@ -66,9 +66,12 @@ class MeleeAction(ActionWithDirection):
         if not target:
             return
 
-        print(
-            f"The {self.entity.name} lays down suppressing fire at the {target.name}!"
-        )
+        if self.entity.fighter.is_in_range(target):
+            print(
+                f"The {self.entity.name} lays down suppressing fire at the {target.name}!"
+            )
+        else:
+            print(f"Out of range")
 
 
 class MovementAction(ActionWithDirection):
@@ -83,6 +86,7 @@ class MovementAction(ActionWithDirection):
             return  # blocked by another unit
 
         self.entity.move(self.dx, self.dy)
+        self.engine.render_mode = "attack"
         self.engine.update_fov()
 
 
@@ -107,17 +111,39 @@ class MoveCursorAction(ActionWithDirection):
 class SelectAction(Action):
     def perform(self) -> None:
         cursor = self.engine.cursor
-        for entity in self.engine.gamemap.entities - {self.entity}:
+        for entity in self.engine.gamemap.entities - {cursor}:
             if (entity.x, entity.y) == (cursor.x, cursor.y):
-                cursor.selection = entity
+                if cursor.selection == entity and self.engine.render_mode == "move":
+                    # toggle render mode
+                    self.engine.render_mode = "attack"
+                else:
+                    cursor.selection = entity
+                    self.engine.render_mode = "move"
                 return
         cursor.selection = None
+        self.engine.render_mode = "none"
         return
 
 
 class WaitAction(Action):
     def perform(self) -> None:
         pass
+
+
+class UnitEndTurnAction(Action):
+    def perform(self) -> None:
+        self.entity.fighter.move_used = False
+        self.entity.fighter.attack_used = False
+
+
+class EndTurnAction(Action):
+    def __init__(self, entity: Entity):
+        super().__init__(entity)
+
+    def perform(self) -> None:
+        self.engine.handle_enemy_turns()
+        self.engine.render_mode = "none"
+        self.engine.cursor.selection = None
 
 
 class EnemyAction(Action):

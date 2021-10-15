@@ -101,6 +101,14 @@ class Actor(Entity):
         """ return true as long as the actor can still act"""
         return bool(self.ai)
 
+    def move(self, dx: int, dy: int) -> None:
+        """
+        Move the entity by a given amount
+        Actors use the move method of their fighter, which will check terrain and use fuel
+        Entity just moves directly
+        """
+        self.fighter.move(dx, dy)
+
 
 class Cursor(Entity):
     def __init__(self):

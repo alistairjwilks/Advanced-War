@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class GameMap:
     def __init__(self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()):
         self.width, self.height = width, height
-        self.tiles = np.full((width, height), fill_value=tile_types.mountain, order="F")
+        self.tiles = np.full((width, height), fill_value=tile_types.plains, order="F")
 
         self.engine = engine
         self.entities = set(entities)  # initialise the given entities into a set. entities belong to the map now
@@ -33,9 +33,9 @@ class GameMap:
             if isinstance(entity, Actor) and entity.is_alive
         )
 
-    def get_actor_at_location(self, x:int, y:int) -> Optional[Actor]:
+    def get_actor_at_location(self, x: int, y: int) -> Optional[Actor]:
         for actor in self.actors:
-            if actor.x == x and actor.y ==y:
+            if actor.x == x and actor.y == y:
                 return actor
 
         return None
@@ -43,9 +43,9 @@ class GameMap:
     def get_blocking_entity_at_location(self, location_x: int, location_y: int) -> Optional[Entity]:
         for entity in self.entities:
             if (
-                entity.blocks_movement
-                and entity.x == location_x
-                and entity.y == location_y
+                    entity.blocks_movement
+                    and entity.x == location_x
+                    and entity.y == location_y
             ):
                 return entity
         return None
@@ -107,8 +107,14 @@ class GameMap:
                 console.print(x=entity.x, y=entity.y, string=entity.char, fg=entity.color)
         cursor = self.engine.cursor
 
-        if cursor.selection:
-            candidate_tiles = cursor.selection.fighter.move_range()
+        if cursor.selection and cursor.selection.fighter:
+            if self.engine.render_mode == "move":
+                candidate_tiles = cursor.selection.fighter.move_range()
+            elif self.engine.render_mode == "attack":
+                candidate_tiles = cursor.selection.fighter.attack_range()
+            else:
+                candidate_tiles = []
+
             for tile in candidate_tiles:
                 self.draw_inverted(*tile, console)
 
@@ -118,6 +124,3 @@ class GameMap:
                 self.draw_inverted(cursor.x, cursor.y, console)
         else:
             self.draw_inverted(cursor.x, cursor.y, console)
-
-
-

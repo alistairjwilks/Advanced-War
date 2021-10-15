@@ -58,7 +58,8 @@ class EventHandler(tcod.event.EventDispatch[Action]):
                 )
 
         elif key == tcod.event.K_v:
-            action = EnemyAction(cursor)
+            action = EndTurnAction(cursor)
+            print("Turn ended")
 
 
         elif key == tcod.event.K_ESCAPE:
