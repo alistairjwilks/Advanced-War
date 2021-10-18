@@ -101,6 +101,12 @@ class Actor(Entity):
         """ return true as long as the actor can still act"""
         return bool(self.ai)
 
+    @property
+    def active(self) -> bool:
+        return not (self.fighter.move_used)
+                    # and self.fighter.attack_used)
+
+
     def move(self, dx: int, dy: int) -> None:
         """
         Move the entity by a given amount

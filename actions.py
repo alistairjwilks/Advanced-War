@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Tuple, Optional
+from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Entity, Cursor
+    from entity import Entity, Cursor, Actor
 
 
 class Action:
@@ -111,7 +111,7 @@ class MoveCursorAction(ActionWithDirection):
 class SelectAction(Action):
     def perform(self) -> None:
         cursor = self.engine.cursor
-        for entity in self.engine.gamemap.entities - {cursor}:
+        for entity in self.engine.gamemap.actors:
             if (entity.x, entity.y) == (cursor.x, cursor.y):
                 if cursor.selection == entity and self.engine.render_mode == "move":
                     # toggle render mode
@@ -123,6 +123,25 @@ class SelectAction(Action):
         cursor.selection = None
         self.engine.render_mode = "none"
         return
+
+
+class SelectNextAction(Action):
+    # look through available unused entities and select the next one
+
+    actorList = []
+
+    def perform(self) -> None:
+        cursor = self.engine.cursor
+        if not SelectNextAction.actorList:
+            # empty list evaluates to false
+            SelectNextAction.actorList = [
+                actor for actor in self.engine.gamemap.actors if actor.active
+            ]
+            if not SelectNextAction.actorList:
+                return
+        next_actor = SelectNextAction.actorList.pop()
+        MoveCursorAction(cursor, next_actor.x - cursor.x, next_actor.y - cursor.y).perform()
+        SelectAction(cursor).perform()
 
 
 class WaitAction(Action):
