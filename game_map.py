@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Iterator, Optional, TYPE_CHECKING
+from typing import Iterable, Iterator, Optional, TYPE_CHECKING, Tuple
 
 import numpy as np  # type: ignore
 from tcod.console import Console
@@ -58,25 +58,43 @@ class GameMap:
         on_visible = "light" if self.visible[x, y] else "dark"
         for entity in self.entities - {self.engine.cursor}:
             if (entity.x, entity.y) == (x, y):
-                console.print(x, y, string=entity.char, fg=entity.color, bg=tuple(self.tiles[x, y][on_visible]["bg"]))
+                console.print(x, y, string=entity.char, fg=entity.color, bg=entity.bg_color)
                 return
+
+        console.print(x=x, y=y,
+                      string=chr(self.tiles[x, y][on_visible]["ch"]),
+                      fg=tuple(self.tiles[x, y][on_visible]["fg"]),
+                      bg=tuple(self.tiles[x, y][on_visible]["bg"]))
+
+    def entity_at(self, x, y) -> Optional[Entity]:
+        for entity in self.entities - {self.engine.cursor}:
+            if (entity.x, entity.y) == (x, y):
+                return entity
+
+    def draw_highlighted(self, x: int, y: int, highlight_color: Tuple[int, int, int], console: Console):
+        entity = self.entity_at(x, y)
+        if entity:
+            console.print(x, y, string=entity.char, bg=highlight_color, fg=entity.color)
         else:
-            console.print(x=x, y=y,
-                          string=chr(self.tiles[x, y][on_visible]["ch"]),
-                          fg=tuple(self.tiles[x, y][on_visible]["fg"]),
-                          bg=tuple(self.tiles[x, y][on_visible]["bg"]))
+            tile = self.tiles[x, y]["dark"]
+            console.print(x, y, string=chr(tile["ch"]), fg=tuple(tile["fg"]), bg=highlight_color)
 
     def draw_inverted(self, x: int, y: int, console: Console):
         on_visible = "light" if self.visible[x, y] else "dark"
-        for entity in self.entities - {self.engine.cursor}:
-            if (entity.x, entity.y) == (x, y):
-                console.print(x, y, string=entity.char, bg=entity.color, fg=tuple(self.tiles[x, y][on_visible]["bg"]))
-                return
+        entity = self.entity_at(x, y)
+        if entity:
+            console.print(x, y, string=entity.char, bg=entity.color, fg=entity.bg_color)
+            return
 
-            console.print(x=x, y=y,
-                          string=chr(self.tiles[x, y][on_visible]["ch"]),
-                          bg=tuple(self.tiles[x, y][on_visible]["fg"]),
-                          fg=tuple(self.tiles[x, y][on_visible]["bg"]))
+        console.print(x=x, y=y,
+                      string=chr(self.tiles[x, y][on_visible]["ch"]),
+                      bg=tuple(self.tiles[x, y][on_visible]["fg"]),
+                      fg=tuple(self.tiles[x, y][on_visible]["bg"]))
+
+    def draw_selected(self, console: Console):
+        selected: Entity = self.engine.cursor.selection
+        if selected:
+            self.draw_highlighted(selected.x, selected.y, (255, 255, 255), console)
 
     def render(self, console: Console) -> None:
         """
@@ -104,23 +122,21 @@ class GameMap:
         for entity in self.entities - {self.engine.cursor}:
             # Only show visible entities, and not the cursor
             if self.visible[entity.x, entity.y]:
-                console.print(x=entity.x, y=entity.y, string=entity.char, fg=entity.color)
+                self.draw(entity.x, entity.y, console)
         cursor = self.engine.cursor
 
         if cursor.selection and cursor.selection.fighter:
-            if self.engine.render_mode == "move":
+            if self.engine.render_mode == "move" and not cursor.selection.fighter.move_used:
+                highlight = (209, 224, 255)
                 candidate_tiles = cursor.selection.fighter.move_range()
-            elif self.engine.render_mode == "attack":
+            elif self.engine.render_mode == "attack" and not cursor.selection.fighter.attack_used:
+                highlight = (255, 200, 200)
                 candidate_tiles = cursor.selection.fighter.attack_range()
             else:
                 candidate_tiles = []
 
             for tile in candidate_tiles:
-                self.draw_inverted(*tile, console)
+                self.draw_highlighted(*tile, highlight_color=highlight, console=console)
 
-            if (cursor.x, cursor.y) in candidate_tiles:
-                self.draw(cursor.x, cursor.y, console)
-            else:
-                self.draw_inverted(cursor.x, cursor.y, console)
-        else:
-            self.draw_inverted(cursor.x, cursor.y, console)
+        self.draw_highlighted(cursor.x, cursor.y, (255, 255, 255), console)
+        self.draw_selected(console)

@@ -14,7 +14,11 @@ class Fighter(BaseComponent):
                  atk_range: int = 1,
                  vision: int = 0,
                  min_range: int = 1,
-                 fuel: int = 99
+                 fuel: int = 99,
+                 code: str = "NIL",
+                 primary_wpn: bool = False,
+                 secondary_wpn: bool = False,
+                 ammo:int = 0
                  ):
         self.max_hp = hp
         self._hp = hp
@@ -28,6 +32,9 @@ class Fighter(BaseComponent):
         self.min_range = min_range
         self.fuel_max = fuel
         self.fuel_remaining = fuel
+        self.code = code
+        self.primary_wpn = primary_wpn
+        self.secondary_wpn = secondary_wpn
 
     @property  # a getter
     def hp(self) -> int:

@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING
 
+import tile_types
+
 if TYPE_CHECKING:
     from components.ai import BaseAI
     from components.fighter import Fighter
@@ -38,6 +40,17 @@ class Entity:
             self.gamemap.entities.add(self)
         self.selection = None
         self.vision = 0
+
+    @property
+    def tile(self) -> tile_types.tile_dt:
+        return self.gamemap.tiles[self.x, self.y]
+
+    @property
+    def bg_color(self) -> Tuple[int, int, int]:
+        if self.gamemap.visible[self.x, self.y]:
+            return tuple(self.tile["light"]["bg"])
+        else:
+            return tuple(self.tile["dark"]["bg"])
 
     def spawn(self: T, gamemap: GameMap, x: int, y: int) -> T:
         """Spawn a copy of this instance at the given location"""
@@ -103,9 +116,14 @@ class Actor(Entity):
 
     @property
     def active(self) -> bool:
-        return not (self.fighter.move_used)
-                    # and self.fighter.attack_used)
+        return not (self.fighter.move_used and self.fighter.attack_used)
 
+    @property
+    def bg_color(self) -> Tuple[int, int, int]:
+        if self.active:
+            super().bg_color
+        else:
+            return 160, 160, 160
 
     def move(self, dx: int, dy: int) -> None:
         """
@@ -120,4 +138,3 @@ class Cursor(Entity):
     def __init__(self):
         super().__init__()
         self.selection = None
-

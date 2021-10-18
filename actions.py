@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
+import damage_table
+
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity, Cursor, Actor
@@ -61,15 +63,41 @@ class ActionWithDirection(Action):
 
 class MeleeAction(ActionWithDirection):
     def perform(self) -> None:
+        attacker = self.entity
         target = self.blocking_entity
+        primary = ""
+        damage = 0
 
-        if not target:
+        if not target or attacker.fighter.attack_used:
             return
 
-        if self.entity.fighter.is_in_range(target):
-            print(
-                f"The {self.entity.name} lays down suppressing fire at the {target.name}!"
-            )
+        if attacker.fighter.is_in_range(target):
+            # try both weapons on target
+            if attacker.fighter.primary_wpn and attacker.fighter.ammo > 0:
+                # try to use primary weapon
+                primary = "_p"
+                try:
+                    damage = damage_table.table[attacker.fighter.code + primary][target.fighter.code]
+                    attacker.fighter.ammo -= 1
+                except KeyError:
+                    primary = ""  # use secondary
+            if primary == "":
+                # if no primary or no ammo or primary not used on target
+                try:
+                    damage = damage_table.table[attacker.fighter.code][target.fighter.code]
+                except KeyError:
+                    print("invalid target")
+                    return
+
+            if damage > 0:
+                print(
+                    f"The {self.entity.name} does {damage} damage to {target.name}"
+                )
+                # deactivate the attacker
+                attacker.fighter.attack_used = True
+                attacker.fighter.move_used = True
+            else:
+                print("invalid target")
         else:
             print(f"Out of range")
 
@@ -111,17 +139,23 @@ class MoveCursorAction(ActionWithDirection):
 class SelectAction(Action):
     def perform(self) -> None:
         cursor = self.engine.cursor
-        for entity in self.engine.gamemap.actors:
+        for entity in [actor for actor in self.engine.gamemap.actors if actor.active]:
             if (entity.x, entity.y) == (cursor.x, cursor.y):
-                if cursor.selection == entity and self.engine.render_mode == "move":
+
+                if\
+                        cursor.selection == entity and \
+                        not cursor.selection.fighter.move_used and \
+                        not self.engine.render_mode == "move":
                     # toggle render mode
+                    self.engine.render_mode = "move"
+                elif cursor.selection == entity and \
+                        not cursor.selection.fighter.attack_used and \
+                        not self.engine.render_mode == "attack":
                     self.engine.render_mode = "attack"
                 else:
                     cursor.selection = entity
-                    self.engine.render_mode = "move"
                 return
         cursor.selection = None
-        self.engine.render_mode = "none"
         return
 
 
@@ -141,6 +175,10 @@ class SelectNextAction(Action):
                 return
         next_actor = SelectNextAction.actorList.pop()
         MoveCursorAction(cursor, next_actor.x - cursor.x, next_actor.y - cursor.y).perform()
+        if not next_actor.fighter.move_used:
+            self.engine.render_mode = "move"
+        else:
+            self.engine.render_mode = "attack"
         SelectAction(cursor).perform()
 
 

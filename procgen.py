@@ -108,6 +108,7 @@ def generate_dungeon(
             # place player in the starting room
             # Entity.spawn(entity_factories.player, gamemap=dungeon, x=20, y=20)
             Entity.spawn(entity_factories.infantry, gamemap=dungeon, x=20, y=20)
+            Entity.spawn(entity_factories.infantry, gamemap=dungeon, x=21, y=21)
             dungeon.tiles[21, 20] = tile_types.woods
             Entity.spawn(entity_factories.artillery, gamemap=dungeon, x=23, y=20)
         else:
