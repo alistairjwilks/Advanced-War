@@ -4,6 +4,7 @@ import copy
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING
 
 import tile_types
+from components.team import Team
 
 if TYPE_CHECKING:
     from components.ai import BaseAI
@@ -89,7 +90,7 @@ class Actor(Entity):
             x: int = 0,
             y: int = 0,
             char: str = "?",
-            color: tuple[int, int, int] = (255, 255, 255),
+            team: Team,
             name: str = "<Unnamed>",
             ai_cls: Type[BaseAI],
             fighter: Fighter,
@@ -98,7 +99,7 @@ class Actor(Entity):
             x=x,
             y=y,
             char=char,
-            color=color,
+            color=team.color,
             name=name,
             blocks_movement=True,
         )

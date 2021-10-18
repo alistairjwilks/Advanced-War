@@ -118,7 +118,6 @@ class EventHandler(tcod.event.EventDispatch[Action]):
             action = EndTurnAction(cursor)
             print("Turn ended")
 
-
         elif key == tcod.event.K_ESCAPE:
             action = EscapeAction(cursor)
 

@@ -18,7 +18,7 @@ class Fighter(BaseComponent):
                  code: str = "NIL",
                  primary_wpn: bool = False,
                  secondary_wpn: bool = False,
-                 ammo:int = 0
+                 ammo: int = 0
                  ):
         self.max_hp = hp
         self._hp = hp
@@ -31,14 +31,32 @@ class Fighter(BaseComponent):
         self.atk_range = atk_range
         self.min_range = min_range
         self.fuel_max = fuel
-        self.fuel_remaining = fuel
+        self._fuel = fuel
         self.code = code
         self.primary_wpn = primary_wpn
         self.secondary_wpn = secondary_wpn
+        self.ammo_max = ammo
+        self._ammo = ammo
 
     @property  # a getter
     def hp(self) -> int:
         return self._hp
+
+    @property
+    def fuel(self) -> int:
+        return self._fuel
+
+    @property
+    def ammo(self) -> int:
+        return self._ammo
+
+    @fuel.setter
+    def fuel(self, value: int) -> None:
+        self._fuel = max(0, min(value, self.fuel_max))
+
+    @ammo.setter
+    def ammo(self, value: int) -> None:
+        self._ammo = max(0, min(value, self.ammo_max))
 
     @hp.setter
     def hp(self, value: int) -> None:
@@ -50,8 +68,8 @@ class Fighter(BaseComponent):
             self.entity.x += dx
             self.entity.y += dy
             self.move_used = True
-            self.fuel_remaining -= self.path_cost(dx, dy)
-            print(self.entity.name + " fuel:"+str(self.fuel_remaining))
+            self._fuel -= self.path_cost(dx, dy)
+            print(self.entity.name + " fuel:" + str(self._fuel))
 
     def path_cost(self, dx, dy) -> int:
         path = self.entity.ai.get_path_to(self.entity.x + dx, self.entity.y + dy)
@@ -62,7 +80,7 @@ class Fighter(BaseComponent):
 
         if self.move_used:  # one move per turn
             return candidate_tiles
-        move_range = min(self.movement, self.fuel_remaining)
+        move_range = min(self.movement, self._fuel)
         for dx in range(-move_range, move_range + 1):
             for dy in range(-move_range, move_range + 1):
                 if abs(dx) + abs(dy) <= move_range:
