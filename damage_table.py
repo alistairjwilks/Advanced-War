@@ -12,6 +12,10 @@ cursor.selection.attack(blocking_entity)
 
 
 table = dict(
-    inf={"inf": 55, "mec": 55},
-    mec={"inf": 55, "mec": 55}
+    inf = {"inf": 55, "mec": 55, "tnk": 5},
+    mec_p={"tnk": 45},
+    mec = {"inf": 55, "mec": 55, "tnk": 5},
+    tnk_p={"tnk": 45},
+    tnk = {"inf": 65, "mec": 55, "tnk": 10}
+
 )

@@ -82,6 +82,9 @@ class Entity:
         self.x = dest_x
         self.y = dest_y
 
+    def is_alive(self):
+        return False
+
 
 class Actor(Entity):
     def __init__(

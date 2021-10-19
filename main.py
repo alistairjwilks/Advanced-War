@@ -25,7 +25,7 @@ def main() -> None:
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
     cursor = entity_factories.player
-    players = [team.red_team, team.blue_team, team.green_team, team.black_team]
+    players = [team.red_team, team.blue_team]
     engine = Engine(cursor, players)
 
     # gamemap = generate_empty(map_width=map_width, map_height=map_height, player=player)

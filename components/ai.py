@@ -4,7 +4,7 @@ from typing import List, Tuple, TYPE_CHECKING
 import numpy as np
 import tcod
 
-from actions import Action, MeleeAction, MovementAction, WaitAction, BumpAction, UnitEndTurnAction
+from actions import Action, AttackAction, MovementAction, WaitAction, BumpAction, UnitEndTurnAction
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:

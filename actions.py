@@ -61,15 +61,17 @@ class ActionWithDirection(Action):
         raise NotImplementedError()
 
 
-class MeleeAction(ActionWithDirection):
-    def perform(self) -> None:
-        attacker = self.entity
-        target = self.blocking_entity
-        primary = ""
-        damage = 0
+class AttackAction(ActionWithDirection):
 
-        if not target or attacker.fighter.attack_used:
-            return
+    def calculate_damage(self, attacker: Actor, defender: Actor, primary: str = "") -> int:
+        base_damage = damage_table.table[attacker.fighter.code + primary][defender.fighter.code]
+        return int(base_damage * attacker.fighter.hp / 100)
+
+    def attack(self, attacker: Actor, target: Actor) -> int:
+        if not target or target.team.code == attacker.team.code:
+            # can't attack your own team or nothing
+            return 0
+        primary = ""
 
         if attacker.fighter.is_in_range(target):
             # try both weapons on target
@@ -77,29 +79,45 @@ class MeleeAction(ActionWithDirection):
                 # try to use primary weapon
                 primary = "_p"
                 try:
-                    damage = damage_table.table[attacker.fighter.code + primary][target.fighter.code]
+                    damage = self.calculate_damage(attacker, target, primary)
                     attacker.fighter.ammo -= 1
                 except KeyError:
                     primary = ""  # use secondary
             if primary == "":
                 # if no primary or no ammo or primary not used on target
                 try:
-                    damage = damage_table.table[attacker.fighter.code][target.fighter.code]
+                    damage = self.calculate_damage(attacker, target)
                 except KeyError:
                     print("invalid target")
-                    return
+                    return 0
 
             if damage > 0:
+                target.fighter.take_damage(damage)
+                return damage
+
+
+    def perform(self) -> None:
+        attacker: Actor = self.entity
+        target: Actor = self.blocking_entity
+
+        if not target or attacker.fighter.attack_used or target.team.code == attacker.team.code:
+            # can't attack your own team
+            return
+
+        damage = self.attack(attacker, target)
+        if damage > 0:
+            print(
+                f"The {attacker.name}({attacker.fighter.hp}) does {damage} damage to {target.name}({target.fighter.hp})"
+            )
+            attacker.fighter.attack_used = True
+            attacker.fighter.move_used = True
+        if target.is_alive:
+            retaliation = self.attack(target, attacker)
+            if retaliation > 0:
                 print(
-                    f"The {self.entity.name} does {damage} damage to {target.name}"
+                    f"The {target.name}({target.fighter.hp}) retaliates for {retaliation} on {attacker.name}({attacker.fighter.hp})"
                 )
-                # deactivate the attacker
-                attacker.fighter.attack_used = True
-                attacker.fighter.move_used = True
-            else:
-                print("invalid target")
-        else:
-            print(f"Out of range")
+
 
 
 class MovementAction(ActionWithDirection):
@@ -121,7 +139,7 @@ class MovementAction(ActionWithDirection):
 class BumpAction(ActionWithDirection):
     def perform(self) -> None:
         if self.blocking_entity:
-            return MeleeAction(self.entity, self.dx, self.dy).perform()
+            return AttackAction(self.entity, self.dx, self.dy).perform()
         else:
             return MovementAction(self.entity, self.dx, self.dy).perform()
 
@@ -204,6 +222,7 @@ class EndTurnAction(Action):
         self.engine.render_mode = "none"
         self.engine.cursor.selection = None
         self.engine.next_player()
+        SelectNextAction(self.entity).perform()
         SelectNextAction(self.entity).perform()
 
 

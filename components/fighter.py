@@ -7,9 +7,7 @@ from entity import Entity
 
 class Fighter(BaseComponent):
     def __init__(self,
-                 hp: int,
-                 defense: int,
-                 power: int,
+                 hp: int = 100,
                  movement: int = 3,
                  atk_range: int = 1,
                  vision: int = 0,
@@ -22,8 +20,6 @@ class Fighter(BaseComponent):
                  ):
         self.max_hp = hp
         self._hp = hp
-        self.defense = defense
-        self.power = power
         self.movement = movement
         self.vision = vision
         self.move_used = False  # handle units taking turns
@@ -103,3 +99,12 @@ class Fighter(BaseComponent):
                     if self.engine.gamemap.in_bounds(self.entity.x + dx, self.entity.y + dy):
                         candidate_tiles.append((self.entity.x + dx, self.entity.y + dy))
         return candidate_tiles
+
+    def take_damage(self, damage):
+        self.hp = self.hp-damage
+        if self.hp == 0:
+            self.die()
+
+    def die(self):
+        self.entity.ai = None
+        self.engine.gamemap.entities.remove(self.entity)
