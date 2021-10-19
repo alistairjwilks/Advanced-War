@@ -33,6 +33,15 @@ class GameMap:
             if isinstance(entity, Actor) and entity.is_alive
         )
 
+    @property
+    def units(self) -> Iterator[Actor]:
+        """ Iterate over the map's actors"""
+        yield from (
+            entity
+            for entity in self.entities
+            if isinstance(entity, Actor) and entity.is_alive
+        )
+
     def get_actor_at_location(self, x: int, y: int) -> Optional[Actor]:
         for actor in self.actors:
             if actor.x == x and actor.y == y:

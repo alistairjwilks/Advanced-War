@@ -1,9 +1,14 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+
+import queue
+from queue import Queue
+from typing import TYPE_CHECKING, Iterable
 
 from tcod.context import Context
 from tcod.console import Console
 
+from components import team
+from components.team import Team
 from input_handlers import EventHandler
 
 if TYPE_CHECKING:
@@ -14,10 +19,17 @@ if TYPE_CHECKING:
 class Engine:
     gamemap: GameMap = None
 
-    def __init__(self, player: Cursor, render_mode: str = "none"):
+    def __init__(self, player: Cursor, players: Iterable[Team], render_mode: str = "none"):
         self.cursor = player
         self.event_handler: EventHandler = EventHandler(self)
         self.render_mode = render_mode
+        self.player_list = players
+        self.remaining_players = queue.Queue(maxsize=len(players))
+        for player in players:
+            self.remaining_players.put(player)
+        self.active_player = self.remaining_players.get()
+        # self.remaining_players.put(self.active_player)
+        print(self.active_player.name)
 
 
     def update_fov(self) -> None:
@@ -46,8 +58,15 @@ class Engine:
         self.gamemap.render(console)
         # skip printing the player, we use a cursor inside of the map
 
-    def handle_enemy_turns(self) -> None:
-        for entity in set(self.gamemap.actors) - {self.cursor}:
+    def next_player(self):
+        print(self.active_player.name)
+        ending_player = self.active_player
+        self.active_player = self.remaining_players.get()
+        self.remaining_players.put(ending_player)
+        self.new_turn(self.active_player)
+        print(self.active_player.name)
+
+    def new_turn(self, player: Team) -> None:
+        for entity in [entity for entity in set(self.gamemap.actors) if entity.team.code == player.code]:
             if entity.ai:
                 entity.ai.perform()
-

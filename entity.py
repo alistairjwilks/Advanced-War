@@ -99,7 +99,7 @@ class Actor(Entity):
             x=x,
             y=y,
             char=char,
-            color=team.color,
+            color=team.fg_color,
             name=name,
             blocks_movement=True,
         )
@@ -109,6 +109,7 @@ class Actor(Entity):
         self.fighter = fighter
         self.fighter.entity = self
         self.vision = fighter.vision
+        self.team = team
 
     @property
     def is_alive(self) -> bool:

@@ -110,8 +110,11 @@ def generate_dungeon(
         if len(rooms) == 0:
             # place player in the starting room
             # Entity.spawn(entity_factories.player, gamemap=dungeon, x=20, y=20)
-            Entity.spawn(entity_factories.infantry(team.blue_team), gamemap=dungeon, x=20, y=20)
-            Entity.spawn(entity_factories.infantry(team.red_team), gamemap=dungeon, x=21, y=21)
+            for i in range(-1,1):
+                Entity.spawn(entity_factories.infantry(team.red_team), gamemap=dungeon, x=20+i, y=20)
+                Entity.spawn(entity_factories.infantry(team.blue_team), gamemap=dungeon, x=10+i, y=10)
+                Entity.spawn(entity_factories.infantry(team.green_team), gamemap=dungeon, x=10 + i, y=20)
+                Entity.spawn(entity_factories.infantry(team.black_team), gamemap=dungeon, x=20 + i, y=10)
             dungeon.tiles[21, 20] = tile_types.woods
         else:
             # dig out a tunnel connecting this to the previous room

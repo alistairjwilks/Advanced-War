@@ -3,6 +3,7 @@ import tcod
 
 import entity
 import tile_types
+from components import team
 from engine import Engine
 from entity import Cursor
 import entity_factories
@@ -23,9 +24,9 @@ def main() -> None:
     tileset = tcod.tileset.load_tilesheet(
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
-    player = entity_factories.player
-
-    engine = Engine(player)
+    cursor = entity_factories.player
+    players = [team.red_team, team.blue_team, team.green_team, team.black_team]
+    engine = Engine(cursor, players)
 
     # gamemap = generate_empty(map_width=map_width, map_height=map_height, player=player)
 
@@ -37,7 +38,7 @@ def main() -> None:
         max_rooms=max_rooms,
         engine=engine
     )
-    player.place(21,21,engine.gamemap)
+    cursor.place(21,21,engine.gamemap)
     engine.update_fov()
 
     with tcod.context.new_terminal(

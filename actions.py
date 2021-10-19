@@ -139,7 +139,9 @@ class MoveCursorAction(ActionWithDirection):
 class SelectAction(Action):
     def perform(self) -> None:
         cursor = self.engine.cursor
-        for entity in [actor for actor in self.engine.gamemap.actors if actor.active]:
+        for entity in [unit for unit in self.engine.gamemap.actors if
+                       unit.active and unit.team.code == self.engine.active_player.code]:
+            # only able to select from your own units
             if (entity.x, entity.y) == (cursor.x, cursor.y):
 
                 if\
@@ -169,7 +171,8 @@ class SelectNextAction(Action):
         if not SelectNextAction.actorList:
             # empty list evaluates to false
             SelectNextAction.actorList = [
-                actor for actor in self.engine.gamemap.actors if actor.active
+                actor for actor in self.engine.gamemap.actors if
+                actor.active and actor.team.code == self.engine.active_player.code
             ]
             if not SelectNextAction.actorList:
                 return
@@ -198,9 +201,10 @@ class EndTurnAction(Action):
         super().__init__(entity)
 
     def perform(self) -> None:
-        self.engine.handle_enemy_turns()
         self.engine.render_mode = "none"
         self.engine.cursor.selection = None
+        self.engine.next_player()
+        SelectNextAction(self.entity).perform()
 
 
 class EnemyAction(Action):
@@ -208,4 +212,4 @@ class EnemyAction(Action):
         super().__init__(entity)
 
     def perform(self) -> None:
-        self.engine.handle_enemy_turns()
+        self.engine.new_turn()
