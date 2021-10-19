@@ -7,7 +7,7 @@ from components import team
 from engine import Engine
 from entity import Cursor
 import entity_factories
-from procgen import generate_dungeon
+from procgen import generate_aw_map
 
 
 def main() -> None:
@@ -30,15 +30,10 @@ def main() -> None:
 
     # gamemap = generate_empty(map_width=map_width, map_height=map_height, player=player)
 
-    engine.gamemap = generate_dungeon(
-        map_width=map_width,
-        map_height=map_height,
-        room_min_size=room_min_size,
-        room_max_size=room_max_size,
-        max_rooms=max_rooms,
+    engine.gamemap = generate_aw_map(
         engine=engine
     )
-    cursor.place(21,21,engine.gamemap)
+    cursor.place(engine.gamemap.width // 2, engine.gamemap.height // 2, engine.gamemap)
     engine.update_fov()
 
     with tcod.context.new_terminal(

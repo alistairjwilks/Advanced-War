@@ -94,6 +94,7 @@ class Actor(Entity):
             y: int = 0,
             char: str = "?",
             team: Team,
+            cost: int = 0,
             name: str = "<Unnamed>",
             ai_cls: Type[BaseAI],
             fighter: Fighter,
@@ -105,14 +106,19 @@ class Actor(Entity):
             color=team.fg_color,
             name=name,
             blocks_movement=True,
+
         )
 
         self.ai: Optional[BaseAI] = ai_cls(self)
-
+        self.cost = cost
         self.fighter = fighter
         self.fighter.entity = self
         self.vision = fighter.vision
         self.team = team
+
+    @property
+    def move_type(self) -> str:
+        return self.fighter.move_type
 
     @property
     def is_alive(self) -> bool:

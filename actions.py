@@ -65,36 +65,29 @@ class AttackAction(ActionWithDirection):
 
     def calculate_damage(self, attacker: Actor, defender: Actor, primary: str = "") -> int:
         base_damage = damage_table.table[attacker.fighter.code + primary][defender.fighter.code]
-        return int(base_damage * attacker.fighter.hp / 100)
+        if base_damage == 0:
+            return 0
+        return max(1, int(base_damage * attacker.fighter.hp / 100))  # always do at list one (hidden hp) of damage
 
     def attack(self, attacker: Actor, target: Actor) -> int:
         if not target or target.team.code == attacker.team.code:
             # can't attack your own team or nothing
             return 0
         primary = ""
+        damage = 0
 
         if attacker.fighter.is_in_range(target):
             # try both weapons on target
-            if attacker.fighter.primary_wpn and attacker.fighter.ammo > 0:
+            if attacker.fighter.ammo > 0:
                 # try to use primary weapon
-                primary = "_p"
-                try:
-                    damage = self.calculate_damage(attacker, target, primary)
-                    attacker.fighter.ammo -= 1
-                except KeyError:
-                    primary = ""  # use secondary
-            if primary == "":
-                # if no primary or no ammo or primary not used on target
-                try:
-                    damage = self.calculate_damage(attacker, target)
-                except KeyError:
-                    print("invalid target")
-                    return 0
-
+                damage = self.calculate_damage(attacker, target, "_p")
+            if damage > 0:
+                attacker.fighter.ammo -= 1
+            else:
+                damage = self.calculate_damage(attacker, target)
             if damage > 0:
                 target.fighter.take_damage(damage)
-                return damage
-
+        return damage
 
     def perform(self) -> None:
         attacker: Actor = self.entity
@@ -117,7 +110,6 @@ class AttackAction(ActionWithDirection):
                 print(
                     f"The {target.name}({target.fighter.hp}) retaliates for {retaliation} on {attacker.name}({attacker.fighter.hp})"
                 )
-
 
 
 class MovementAction(ActionWithDirection):
@@ -162,10 +154,10 @@ class SelectAction(Action):
             # only able to select from your own units
             if (entity.x, entity.y) == (cursor.x, cursor.y):
 
-                if\
+                if \
                         cursor.selection == entity and \
-                        not cursor.selection.fighter.move_used and \
-                        not self.engine.render_mode == "move":
+                                not cursor.selection.fighter.move_used and \
+                                not self.engine.render_mode == "move":
                     # toggle render mode
                     self.engine.render_mode = "move"
                 elif cursor.selection == entity and \

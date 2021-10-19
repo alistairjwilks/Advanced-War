@@ -23,7 +23,7 @@ class BaseAI(Action, BaseComponent):
         otherwise return an empty list
         """
 
-        cost = np.array(self.entity.gamemap.tiles["move"], dtype=np.int8)
+        cost = np.array(self.entity.gamemap.tiles["move"][self.entity.move_type], dtype=np.int8)
 
         for entity in self.entity.gamemap.entities:
             # for entities on valid tiles that block us,

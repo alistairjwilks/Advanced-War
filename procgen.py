@@ -71,55 +71,28 @@ def tunnel_between(
     for x, y in tcod.los.bresenham((corner_x, corner_y), (x2, y2)).tolist():
         yield x, y
 
-def generate_dungeon(
-        max_rooms: int,
-        room_min_size: int,
-        room_max_size: int,
-        map_width: int,
-        map_height: int,
-        engine: Engine,
+
+def generate_aw_map(
+        engine: Engine
 ) -> GameMap:
-    """
-    Generate a new dungeon map of interconnected rectangular rooms.
-    """
-    dungeon = GameMap(
+    """ generate a hardcoded test map"""
+    aw_map = GameMap(
         engine=engine,
-        width=map_width,
-        height=map_height,
+        width=20,
+        height=10,
         entities=[]
     )
-    rooms: List[RectangularRoom] = []
 
-    for r in range(max_rooms):
-        room_width = random.randint(room_min_size, room_max_size)
-        room_height = random.randint(room_min_size, room_max_size)
+    for i in range(aw_map.width):
+        aw_map.tiles[i, 0] = tile_types.mountain
+        aw_map.tiles[i, 1:3] = tile_types.woods
+        aw_map.tiles[i, aw_map.height - 1] = tile_types.mountain
 
-        x = random.randint(0, dungeon.width - room_width - 1)
-        y = random.randint(0, dungeon.height - room_height - 1)
+    entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=4)
+    entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=5)
+    entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=6)
 
-        new_room = RectangularRoom(x, y, room_width, room_height)
-
-        # check the other rooms we have made to see if they intersect
-        if any(new_room.intersects(other_room) for other_room in rooms):
-            continue  # invalid room placement, so move on
-        # otherwise continue and build the room
-
-        # dig the room out of the rock map
-        dungeon.tiles[new_room.inner] = tile_types.plains
-
-        if len(rooms) == 0:
-            # place player in the starting room
-            # Entity.spawn(entity_factories.player, gamemap=dungeon, x=20, y=20)
-            for i in range(-1, 1):
-                Entity.spawn(entity_factories.mech(team.red_team), gamemap=dungeon, x=20+i, y=20)
-                Entity.spawn(entity_factories.tank(team.red_team), gamemap=dungeon, x=20 + i, y=21)
-                Entity.spawn(entity_factories.tank(team.blue_team), gamemap=dungeon, x=20+i, y=19)
-            dungeon.tiles[21, 20] = tile_types.woods
-        else:
-            # dig out a tunnel connecting this to the previous room
-            for x, y in tunnel_between(rooms[-1].center, new_room.center):
-                dungeon.tiles[x, y] = tile_types.plains
-
-        rooms.append(new_room)
-
-    return dungeon
+    entity_factories.tank(team.blue_team).spawn(aw_map, x=7, y=4)
+    entity_factories.tank(team.blue_team).spawn(aw_map, x=7, y=5)
+    entity_factories.tank(team.blue_team).spawn(aw_map, x=7, y=6)
+    return aw_map

@@ -13,10 +13,12 @@ class Fighter(BaseComponent):
                  vision: int = 0,
                  min_range: int = 1,
                  fuel: int = 99,
+                 fuel_cost: int = 0,
                  code: str = "NIL",
                  primary_wpn: bool = False,
                  secondary_wpn: bool = False,
-                 ammo: int = 0
+                 ammo: int = 0,
+                 move_type: str = "NIL"
                  ):
         self.max_hp = hp
         self._hp = hp
@@ -28,11 +30,13 @@ class Fighter(BaseComponent):
         self.min_range = min_range
         self.fuel_max = fuel
         self._fuel = fuel
+        self.fuel_cost = fuel_cost
         self.code = code
         self.primary_wpn = primary_wpn
         self.secondary_wpn = secondary_wpn
         self.ammo_max = ammo
         self._ammo = ammo
+        self.move_type = move_type
 
     @property  # a getter
     def hp(self) -> int:
@@ -69,7 +73,7 @@ class Fighter(BaseComponent):
 
     def path_cost(self, dx, dy) -> int:
         path = self.entity.ai.get_path_to(self.entity.x + dx, self.entity.y + dy)
-        return sum(self.engine.gamemap.tiles[step[0], step[1]]["move"] for step in path)
+        return sum(self.engine.gamemap.tiles[step[0], step[1]]["move"][self.move_type] for step in path)
 
     def move_range(self) -> List[Tuple[int, int]]:
         candidate_tiles: List[Tuple[int, int]] = [(self.entity.x, self.entity.y)]
