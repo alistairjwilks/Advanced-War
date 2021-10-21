@@ -13,7 +13,7 @@ def anti_air(team: Team):
         cost=8000,
         name="Anti-Air",
         ai_cls=UnitAI,
-        fighter=Fighter(movement=6, ammo=9, fuel=60, vision=2, code="a-a", move_type="tread")
+        fighter=Fighter(movement=6, ammo=9, fuel=60, vision=2, code="a_a", move_type="tread")
     )
 
 
@@ -246,7 +246,7 @@ def stealth(team: Team):
         name="Stealth Jet",
         ai_cls=UnitAI,
         cost=24000,
-        fighter=Fighter(movement=6, vision=4, code="pip", move_type="air", ammo=6, fuel=60, fuel_cost=5, ),
+        fighter=Fighter(movement=6, vision=4, code="sth", move_type="air", ammo=6, fuel=60, fuel_cost=5, ),
     )
 
 

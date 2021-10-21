@@ -1,3 +1,4 @@
+import math
 from collections import Set
 from typing import Tuple, List
 
@@ -41,6 +42,10 @@ class Fighter(BaseComponent):
     @property  # a getter
     def hp(self) -> int:
         return self._hp
+
+    @property
+    def displayed_hp(self) -> int:
+        return math.ceil(self._hp/10)
 
     @property
     def fuel(self) -> int:

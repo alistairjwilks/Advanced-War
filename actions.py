@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
 import damage_table
@@ -64,10 +65,18 @@ class ActionWithDirection(Action):
 class AttackAction(ActionWithDirection):
 
     def calculate_damage(self, attacker: Actor, defender: Actor, primary: str = "") -> int:
-        base_damage = damage_table.table[attacker.fighter.code + primary][defender.fighter.code]
-        if base_damage == 0:
+        # overall damage formula
+            # (Base damage * attacker mod + luck)*(Attacker display HP / 10) * (200 - (defender + defender_terrain * defender hp))/100
+        try:
+            base_damage = damage_table.table[attacker.fighter.code + primary][defender.fighter.code]
+        except KeyError:
             return 0
-        return max(1, int(base_damage * attacker.fighter.hp / 100))  # always do at list one (hidden hp) of damage
+        damage = (base_damage * attacker.fighter.damage_mod + attacker.team.luck_roll())
+        attacker_hp_mod = (attacker.fighter.displayed_hp/10)
+        defence_mod = (200 - (defender.fighter.defence + (defender.fighter.terrain_defence * defender.fighter.displayed_hp)))
+
+        return math.ceil(damage * attacker_hp_mod * defence_mod)
+
 
     def attack(self, attacker: Actor, target: Actor) -> int:
         if not target or target.team.code == attacker.team.code:
