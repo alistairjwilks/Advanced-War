@@ -14,14 +14,15 @@ if TYPE_CHECKING:
 
 
 class GameMap:
-    def __init__(self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()):
+    def __init__(self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = (), no_fog: bool = False):
         self.width, self.height = width, height
         self.tiles = np.full((width, height), fill_value=tile_types.plains, order="F")
 
         self.engine = engine
         self.entities = set(entities)  # initialise the given entities into a set. entities belong to the map now
 
-        self.visible = np.full((width, height), fill_value=False, order="F")  # track which tiles are visible now
+        self.no_fog = no_fog
+        self.visible = np.full((width, height), fill_value=no_fog, order="F")  # track which tiles are visible now
         # self.explored = np.full((width, height), fill_value=False, order="F")  # track tiles we've seen - not for AW
 
     @property
@@ -48,6 +49,9 @@ class GameMap:
                 return actor
 
         return None
+
+    def get_neighbours(self, x: int, y: int) -> [(int, int)]:
+        return [xy for xy in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] if self.in_bounds(*xy)]
 
     def get_blocking_entity_at_location(self, location_x: int, location_y: int) -> Optional[Entity]:
         for entity in self.entities:
@@ -123,7 +127,7 @@ class GameMap:
         )
         """
         console.tiles_rgb[0:self.width, 0:self.height] = np.select(
-            condlist=[self.visible],
+            condlist=[self.no_fog or self.visible],
             choicelist=[self.tiles["light"]],
             default=self.tiles["dark"]
         )
@@ -133,19 +137,42 @@ class GameMap:
             if self.visible[entity.x, entity.y]:
                 self.draw(entity.x, entity.y, console)
         cursor = self.engine.cursor
-
+        path = None
         if cursor.selection and cursor.selection.fighter:
-            if self.engine.render_mode == "move" and not cursor.selection.fighter.move_used:
-                highlight = (209, 224, 255)
-                candidate_tiles = cursor.selection.fighter.move_range()
-            elif self.engine.render_mode == "attack" and not cursor.selection.fighter.attack_used:
-                highlight = (255, 200, 200)
-                candidate_tiles = cursor.selection.fighter.attack_range()
+
+            candidate_tiles = []
+            attack_tiles = []
+            candidate_targets = []
+
+            highlight_attack = (255, 200, 200) # light red
+            highlight_move = (209, 224, 255) # light blue
+            highlight_target = (255,0,0)  # full red
+
+            if self.engine.render_mode == "move":
+                candidate_tiles = cursor.selection.fighter.calculate_move_range()
+                if cursor.selection.fighter.is_direct_fire:
+                    attack_tiles = cursor.selection.fighter.attack_range()
+                    candidate_targets = cursor.selection.fighter.attack_targets()
+                path = cursor.selection.ai.get_path_to(cursor.x, cursor.y)
+                # print("from gamemap", path)
+            elif self.engine.render_mode == "attack" and not cursor.selection.fighter.attack_used and not cursor.selection.fighter.is_direct_fire:
+                candidate_targets = cursor.selection.fighter.attack_targets()
+                attack_tiles = cursor.selection.fighter.attack_range()
             else:
                 candidate_tiles = []
 
             for tile in candidate_tiles:
-                self.draw_highlighted(*tile, highlight_color=highlight, console=console)
+                self.draw_highlighted(*tile, highlight_color=highlight_move, console=console)
+            if any(attack_tiles):
+                for tile in attack_tiles:
+                    self.draw_highlighted(*tile, highlight_attack, console)
+            if any(candidate_targets):
+                for target in candidate_targets:
+                    self.draw_highlighted(*target, highlight_target, console)
+
+        if path and len(path) <= cursor.selection.fighter.movement:
+            for tile in path:
+                self.draw_highlighted(*tile, highlight_color=(255, 200, 200), console=console)
 
         self.draw_highlighted(cursor.x, cursor.y, (255, 255, 255), console)
         self.draw_selected(console)

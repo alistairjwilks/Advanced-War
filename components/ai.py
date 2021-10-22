@@ -27,7 +27,7 @@ class BaseAI(Action, BaseComponent):
 
         for entity in self.entity.gamemap.entities:
             # for entities on valid tiles that block us,
-            if entity.blocks_movement or cost[entity.x, entity.y] == 0:
+            if entity.blocks_movement and entity.team and not entity.team.code == self.entity.team.code:
                 cost[entity.x, entity.y] = 0
                 # increase the cost of trying to path through another unit, to encourage flanking
                 # we can set this to check the team of the entity later

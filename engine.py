@@ -39,6 +39,8 @@ class Engine:
         #   calculate line of sight - let the unit have a look()
         #   method? or at least a vision stat
         #   set the tiles to visible - replace with tcod path stuff
+        if self.gamemap.no_fog:
+            return
         self.gamemap.visible[:] = False
         for entity in self.gamemap.entities:
             vision = entity.vision

@@ -73,8 +73,8 @@ class AttackAction(ActionWithDirection):
             return 0
         damage = (base_damage * attacker.fighter.damage_mod + attacker.team.luck_roll())
         attacker_hp_mod = (attacker.fighter.displayed_hp/10)
-        defence_mod = (200 - (defender.fighter.defence + (defender.fighter.terrain_defence * defender.fighter.displayed_hp)))
-
+        defence_mod = (200 - (defender.fighter.defence + (defender.fighter.terrain_defence * defender.fighter.displayed_hp)))/100
+        print(f"{damage} * {attacker_hp_mod} * {defence_mod}")
         return math.ceil(damage * attacker_hp_mod * defence_mod)
 
 
@@ -153,6 +153,7 @@ class MoveCursorAction(ActionWithDirection):
         if not self.engine.gamemap.in_bounds(dest_x, dest_y):
             return  # Destination is out of bounds.
         self.entity.move(self.dx, self.dy)
+        # print(self.engine.gamemap.get_neighbours(self.entity.x, self.entity.y))
 
 
 class SelectAction(Action):
@@ -171,7 +172,8 @@ class SelectAction(Action):
                     self.engine.render_mode = "move"
                 elif cursor.selection == entity and \
                         not cursor.selection.fighter.attack_used and \
-                        not self.engine.render_mode == "attack":
+                        not self.engine.render_mode == "attack" and \
+                        not cursor.selection.fighter.is_direct_fire:
                     self.engine.render_mode = "attack"
                 else:
                     cursor.selection = entity

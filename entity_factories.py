@@ -279,6 +279,6 @@ def tank(team: Team):
         name="Tank",
         ai_cls=UnitAI,
         cost=7000,
-        fighter=Fighter(hp=100, movement=6, vision=3, code="tnk", move_type="tread", primary_wpn=True, ammo=1),
+        fighter=Fighter(hp=100, movement=6, vision=3, code="tnk", move_type="tread", primary_wpn=True, ammo=9),
     )
     return unit

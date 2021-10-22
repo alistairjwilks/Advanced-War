@@ -30,6 +30,7 @@ class Entity:
             name: str = "<Unnamed>",
             blocks_movement: bool = False
     ):
+        self.team = None
         self.x = x
         self.y = y
         self.char = char
@@ -131,7 +132,7 @@ class Actor(Entity):
 
     @property
     def bg_color(self) -> Tuple[int, int, int]:
-        if self.active:
+        if self.active or self.gamemap.engine.active_player.code != self.team.code:
             super().bg_color
         else:
             return 160, 160, 160
