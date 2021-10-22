@@ -153,11 +153,11 @@ class Fighter(BaseComponent):
             if self.is_direct_fire:
                 for target in self.gamemap.get_neighbours(*tile):
                     actor = self.gamemap.get_actor_at_location(*target)
-                    if actor and actor.team.code != self.team_code:
+                    if actor and actor.team.code != self.team_code and self.gamemap.visible[actor.x, actor.y]:
                         candidate_targets.append(target)
             else:
                 actor = self.gamemap.get_actor_at_location(*tile)
-                if actor and actor.team.code != self.team_code:
+                if actor and actor.team.code != self.team_code and self.gamemap.visible[actor.x, actor.y]:
                     candidate_targets.append(tile)
 
         return candidate_targets
@@ -170,7 +170,7 @@ class Fighter(BaseComponent):
             for tile in self.move_range:
                 for neighbour in self.gamemap.get_neighbours(*tile):
                     actor = self.gamemap.get_actor_at_location(*neighbour)
-                    if actor and actor.team.code != self.team_code:
+                    if actor and actor.team.code != self.team_code and self.gamemap.visible[actor.x, actor.y]:
                         candidate_tiles.append(tile)
 
         # highlight range for indirect units, as no move and fire

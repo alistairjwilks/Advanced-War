@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 from game_map import GameMap
 
+
 def generate_aw_map(
         engine: Engine
 ) -> GameMap:
@@ -20,7 +21,7 @@ def generate_aw_map(
         width=20,
         height=10,
         entities=[],
-        no_fog=True
+        no_fog=False
     )
 
     for i in range(aw_map.width):
@@ -31,9 +32,9 @@ def generate_aw_map(
     entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=4)
     entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=5)
     entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=6)
-    entity_factories.rocket(team.red_team).spawn(aw_map, x=3,y=5)
+    entity_factories.rocket(team.red_team).spawn(aw_map, x=3, y=5)
 
-    entity_factories.tank(team.blue_team).spawn(aw_map, x=7, y=4)
-    entity_factories.tank(team.blue_team).spawn(aw_map, x=7, y=5)
-    entity_factories.tank(team.blue_team).spawn(aw_map, x=7, y=6)
+    entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=4)
+    entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=5)
+    entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=6)
     return aw_map

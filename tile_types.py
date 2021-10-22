@@ -41,35 +41,41 @@ def new_tile(
         move: Tuple[int, int, int, int, int],
         vision: int,
         defence: int,
-        dark: Tuple[int, Tuple[int, int, int], Tuple[int, int, int]],
-        light: Tuple[int, Tuple[int, int, int], Tuple[int, int, int]],
+        dark: Tuple[Tuple[int, int, int], Tuple[int, int, int]],
+        light: Tuple[Tuple[int, int, int], Tuple[int, int, int]],
+        sym: str
 ) -> np.ndarray:
     """Helper function for defining individual tile types """
-    return np.array((move, vision, defence, dark, light), dtype=tile_dt)
+    dark_tile = (ord(sym), *dark)
+    light_tile = (ord(sym), *light)
+    return np.array((move, vision, defence, dark_tile, light_tile), dtype=tile_dt)
 
 
 # movement costs
-    # inf, mec, tire, tread, air, sea, lander, pipe
+# inf, mec, tire, tread, air, sea, lander, pipe
 plains = new_tile(
     move=(1, 1, 2, 1, 1, 0, 0, 0),
     vision=1,
     defence=1,
-    dark=(ord(","), (50, 50, 0), (100, 100, 0)),
-    light=(ord(","), (229, 255, 54), (200, 200, 0)),
+    sym=',',
+    dark=((50, 50, 0), (100, 100, 0)),
+    light=((229, 255, 54), (200, 200, 0)),
 )
 
 woods = new_tile(
     move=(1, 1, 3, 2, 1, 0, 0, 0),
     vision=1,
     defence=2,
-    dark=(ord("\""), (0, 153, 0), (0, 51, 0)),
-    light=(ord("\""), (0, 220, 0), (0, 153, 0)),
+    sym='"',
+    dark=((0, 153, 0), (0, 51, 0)),
+    light=((0, 220, 0), (0, 153, 0)),
 )
 
 mountain = new_tile(
     move=(2, 1, 0, 0, 1, 0, 0, 0),
     vision=1,
-    defence=3,
-    dark=(ord("^"), (150, 150, 150), (51, 51, 51)),
-    light=(ord("^"), (255, 255, 255), (150, 150, 150)),
+    defence=4,
+    sym="^",
+    dark=((150, 150, 150), (51, 51, 51)),
+    light=((255, 255, 255), (150, 150, 150)),
 )

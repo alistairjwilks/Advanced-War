@@ -27,7 +27,7 @@ class Engine:
         self.remaining_players = queue.Queue(maxsize=len(players))
         for player in players:
             self.remaining_players.put(player)
-        self.active_player = self.remaining_players.get()
+        self.active_player :Actor = self.remaining_players.get()
         # self.remaining_players.put(self.active_player)
         print(self.active_player.name)
 
@@ -42,13 +42,13 @@ class Engine:
         if self.gamemap.no_fog:
             return
         self.gamemap.visible[:] = False
-        for entity in self.gamemap.entities:
-            vision = entity.vision
+        for actor in [actor for actor in self.gamemap.actors if actor.team.code == self.active_player.code]:
+            vision = actor.vision
             for i in range(-vision, vision + 1):
                 for j in range(-vision, vision + 1):
-                    if abs(i) + abs(j) <= vision and self.gamemap.in_bounds(entity.x + i, entity.y + j):
+                    if abs(i) + abs(j) <= vision and self.gamemap.in_bounds(actor.x + i, actor.y + j):
                         try:
-                            self.gamemap.visible[entity.x + i, entity.y + j] = True
+                            self.gamemap.visible[actor.x + i, actor.y + j] = True
                         except(IndexError):
                             pass
 
