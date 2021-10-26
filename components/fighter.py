@@ -1,5 +1,6 @@
 import math
 from collections import Set
+from time import sleep
 from typing import Tuple, List
 
 import numpy as np
@@ -70,7 +71,7 @@ class Fighter(BaseComponent):
 
     @property
     def is_direct_fire(self):
-        if self.min_range>1 or self.atk_range > 1:
+        if self.min_range > 1 or self.atk_range > 1:
             return False
         else:
             return True
@@ -101,7 +102,7 @@ class Fighter(BaseComponent):
         return self.entity.gamemap.tiles[x, y]["defence"]
 
     @property
-    def team_code(self)->str:
+    def team_code(self) -> str:
         return self.entity.team.code
 
     @property
@@ -191,4 +192,3 @@ class Fighter(BaseComponent):
     def die(self):
         self.entity.ai = None
         self.engine.gamemap.entities.remove(self.entity)
-

@@ -37,6 +37,8 @@ def main() -> None:
             vsync=True,
     ) as context:
         root_console = tcod.Console(screen_width, screen_height, order="F")
+        engine.root_console = root_console
+        engine.context = context
         engine.render(console=root_console, context=context)
         while True:
             if engine.event_handler.handle_events():

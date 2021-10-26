@@ -30,6 +30,7 @@ class Entity:
             name: str = "<Unnamed>",
             blocks_movement: bool = False
     ):
+        self.fighter = None
         self.team = None
         self.x = x
         self.y = y
@@ -42,6 +43,10 @@ class Entity:
             self.gamemap.entities.add(self)
         self.selection = None
         self.vision = 0
+
+    @property
+    def is_visible(self):
+        return self.gamemap.visible[self.x, self.y]
 
     @property
     def tile(self) -> tile_types.tile_dt:
@@ -85,6 +90,9 @@ class Entity:
 
     def is_alive(self):
         return False
+
+    def move_by_step(self, dx, dy):
+        self.move(dx, dy)
 
 
 class Actor(Entity):
@@ -144,6 +152,13 @@ class Actor(Entity):
         Entity just moves directly
         """
         self.fighter.move(dx, dy)
+
+    @property
+    def is_visible(self):
+        if self.team.code == self.fighter.engine.active_player.code:
+            return True
+        else:
+            return super().is_visible
 
 
 class Cursor(Entity):

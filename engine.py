@@ -16,8 +16,11 @@ if TYPE_CHECKING:
     from game_map import GameMap
 
 
+
 class Engine:
     gamemap: GameMap = None
+    root_console: Console = None
+    context: Context = None
 
     def __init__(self, player: Cursor, players: Iterable[Team], render_mode: str = "none"):
         self.cursor = player
@@ -27,7 +30,7 @@ class Engine:
         self.remaining_players = queue.Queue(maxsize=len(players))
         for player in players:
             self.remaining_players.put(player)
-        self.active_player :Actor = self.remaining_players.get()
+        self.active_player: Team = self.remaining_players.get()
         # self.remaining_players.put(self.active_player)
         print(self.active_player.name)
 

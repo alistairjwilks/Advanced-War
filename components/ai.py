@@ -26,8 +26,11 @@ class BaseAI(Action, BaseComponent):
         cost = np.array(self.entity.gamemap.tiles["move"][self.entity.move_type], dtype=np.int8)
 
         for entity in self.entity.gamemap.entities:
-            # for entities on valid tiles that block us,
-            if entity.blocks_movement and entity.team and not entity.team.code == self.entity.team.code:
+            # for entities on valid tiles that block us, and we can see them
+            if entity.blocks_movement and \
+                    entity.team and \
+                    not entity.team.code == self.entity.team.code and \
+                    entity.is_visible:
                 cost[entity.x, entity.y] = 0
                 # increase the cost of trying to path through another unit, to encourage flanking
                 # we can set this to check the team of the entity later
@@ -47,28 +50,4 @@ class UnitAI(BaseAI):
 
     def perform(self) -> None:
         return UnitEndTurnAction(self.entity).perform()
-
-
-class TutorialEnemy(BaseAI):
-    def __init__(self, entity: Actor):
-        super().__init__(entity)
-        self.path: List[Tuple[int, int]] = []
-
-    def perform(self) -> None:
-        target = self.engine.cursor
-        dx = target.x - self.entity.x
-        dy = target.y - self.entity.y
-        distance = abs(dx) + abs(dy)  # manhattan distance
-
-        # if self.engine.gamemap.visible[self.entity.x, self.entity.y]:
-
-        self.path = self.get_path_to(target.x, target.y)
-
-        if self.path:
-            dest_x, dest_y = self.path.pop(0)
-            return BumpAction(
-                self.entity, dest_x - self.entity.x, dest_y - self.entity.y,
-            ).perform()
-
-        return WaitAction(self.entity).perform()
 
