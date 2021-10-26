@@ -1,4 +1,4 @@
-from components.ai import TutorialEnemy, UnitAI
+from components.ai import UnitAI
 from components.fighter import Fighter
 from components.team import Team
 from entity import Cursor, Actor

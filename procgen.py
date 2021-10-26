@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+import csv
 from typing import TYPE_CHECKING
+
+import numpy as np
+
+import engine
+from maps import map_key
 
 import entity_factories
 import tile_types
@@ -37,4 +43,28 @@ def generate_aw_map(
     entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=4)
     entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=5)
     entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=6)
+    return aw_map
+
+
+def read_map_awbw(engine: Engine, filename="maps/test.csv") -> GameMap:
+    with open(filename, "r") as f:
+        data = list(csv.reader(f, delimiter=","))
+
+    data = np.array(data)
+    height, width = len(data), len(data[0])
+    print(height, width)
+
+    aw_map = GameMap(
+        engine=engine,
+        width=width,
+        height=height,
+        entities=[],
+        no_fog=False
+    )
+
+    for i in range(width):
+        for j in range(height):
+            aw_map.tiles[i][j] = map_key.key[data[j, i]]
+
+    print(aw_map.tiles["dark"]["ch"])
     return aw_map
