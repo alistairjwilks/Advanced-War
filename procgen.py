@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 from game_map import GameMap
 
 
-def generate_aw_map(
+def generate_test_map(
         engine: Engine
 ) -> GameMap:
     """ generate a hardcoded test map"""
@@ -38,7 +38,7 @@ def generate_aw_map(
     entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=4)
     entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=5)
     entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=6)
-    entity_factories.rocket(team.red_team).spawn(aw_map, x=3, y=5)
+    entity_factories.artillery(team.red_team).spawn(aw_map, x=3, y=5)
 
     entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=4)
     entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=5)

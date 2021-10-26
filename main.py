@@ -7,7 +7,7 @@ from components import team
 from engine import Engine
 from entity import Cursor
 import entity_factories
-from procgen import read_map_awbw, generate_aw_map
+from procgen import read_map_awbw, generate_test_map
 
 
 def main() -> None:
@@ -23,7 +23,7 @@ def main() -> None:
 
     # gamemap = generate_empty(map_width=map_width, map_height=map_height, player=player)
 
-    engine.gamemap = read_map_awbw(
+    engine.gamemap = generate_test_map(
         engine=engine
     )
     cursor.place(engine.gamemap.width // 2, engine.gamemap.height // 2, engine.gamemap)

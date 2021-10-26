@@ -146,7 +146,7 @@ class MoveStepAction(ActionWithDirection):
                     print(self.entity.name + " fuel:" + str(self.entity.fighter.fuel))
                     break
 
-        self.entity.fighter.move_used = True
+            self.entity.fighter.move_used = True
         # print(cost, path)
         self.entity.fighter.calculate_move_range()
         return steps
@@ -271,8 +271,9 @@ class EndTurnAction(Action):
         self.engine.render_mode = "none"
         self.engine.cursor.selection = None
         self.engine.next_player()
+        SelectNextAction.actorList = []
         SelectNextAction(self.entity).perform()
-        SelectNextAction(self.entity).perform()
+
 
 
 class EnemyAction(Action):

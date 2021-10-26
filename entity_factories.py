@@ -1,5 +1,5 @@
 from components.ai import UnitAI
-from components.fighter import Fighter
+from components.fighter import Fighter, IndirectFighter
 from components.team import Team
 from entity import Cursor, Actor
 
@@ -35,7 +35,7 @@ def artillery(team: Team):
         name="Artillery",
         ai_cls=UnitAI,
         cost=6000,
-        fighter=Fighter(movement=5, ammo=9, fuel=50, vision=1, min_range=2, atk_range=3, code="art", move_type="tread")
+        fighter=IndirectFighter(movement=5, ammo=9, fuel=50, vision=1, min_range=2, atk_range=3, code="art", move_type="tread")
     )
 
 
@@ -57,7 +57,7 @@ def battleship(team: Team):
         cost=28000,
         name="Battleship",
         ai_cls=UnitAI,
-        fighter=Fighter(movement=5, ammo=9, fuel=99, fuel_cost=1, vision=2, min_range=2, atk_range=6, code="bsh",
+        fighter=IndirectFighter(movement=5, ammo=9, fuel=99, fuel_cost=1, vision=2, min_range=2, atk_range=6, code="bsh",
                         move_type="sea")
     )
 
@@ -191,7 +191,7 @@ def missile(team: Team):
         name="Missile",
         ai_cls=UnitAI,
         cost=12000,
-        fighter=Fighter(movement=4, vision=5, code="mis", move_type="tire", ammo=6, fuel=50, min_range=3, atk_range=5),
+        fighter=IndirectFighter(movement=4, vision=5, code="mis", move_type="tire", ammo=6, fuel=50, min_range=3, atk_range=5),
     )
 
 
@@ -213,7 +213,7 @@ def piperunner(team: Team):
         name="Piperunner",
         ai_cls=UnitAI,
         cost=20000,
-        fighter=Fighter(movement=9, vision=4, code="pip", move_type="pipe", ammo=9, fuel=99, min_range=2, atk_range=5),
+        fighter=IndirectFighter(movement=9, vision=4, code="pip", move_type="pipe", ammo=9, fuel=99, min_range=2, atk_range=5),
     )
 
 
@@ -235,7 +235,7 @@ def rocket(team: Team):
         name="Rocket",
         ai_cls=UnitAI,
         cost=15000,
-        fighter=Fighter(movement=5, vision=1, code="rkt", move_type="tire", ammo=6, fuel=50, min_range=3, atk_range=5),
+        fighter=IndirectFighter(movement=5, vision=1, code="rkt", move_type="tire", ammo=6, fuel=50, min_range=3, atk_range=5),
     )
 
 

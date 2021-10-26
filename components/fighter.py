@@ -165,22 +165,11 @@ class Fighter(BaseComponent):
 
     def attack_range(self) -> List[Tuple[int, int]]:
         candidate_tiles: List[Tuple[int, int]] = []
-
-        # show attackable targets for direct fire units
-        if self.is_direct_fire:
-            for tile in self.move_range:
-                for neighbour in self.gamemap.get_neighbours(*tile):
-                    actor = self.gamemap.get_actor_at_location(*neighbour)
-                    if actor and actor.team.code != self.team_code and self.gamemap.visible[actor.x, actor.y]:
-                        candidate_tiles.append(tile)
-
-        # highlight range for indirect units, as no move and fire
-        else:
-            for dx in range(-self.atk_range, self.atk_range + 1):
-                for dy in range(-self.atk_range, self.atk_range + 1):
-                    if self.min_range <= abs(dx) + abs(dy) <= self.atk_range:
-                        if self.engine.gamemap.in_bounds(self.entity.x + dx, self.entity.y + dy):
-                            candidate_tiles.append((self.entity.x + dx, self.entity.y + dy))
+        for tile in self.move_range:
+            for neighbour in self.gamemap.get_neighbours(*tile):
+                actor = self.gamemap.get_actor_at_location(*neighbour)
+                if actor and actor.team.code != self.team_code and self.gamemap.visible[actor.x, actor.y]:
+                    candidate_tiles.append(tile)
         return candidate_tiles
 
     def take_damage(self, damage):
@@ -192,3 +181,15 @@ class Fighter(BaseComponent):
     def die(self):
         self.entity.ai = None
         self.engine.gamemap.entities.remove(self.entity)
+
+
+class IndirectFighter(Fighter):
+    def attack_range(self) -> List[Tuple[int, int]]:
+        candidate_tiles: List[Tuple[int, int]] = []
+        for dx in range(-self.atk_range, self.atk_range + 1):
+            for dy in range(-self.atk_range, self.atk_range + 1):
+                if self.min_range <= abs(dx) + abs(dy) <= self.atk_range:
+                    if self.engine.gamemap.in_bounds(self.entity.x + dx, self.entity.y + dy):
+                        candidate_tiles.append((self.entity.x + dx, self.entity.y + dy))
+        return candidate_tiles
+
