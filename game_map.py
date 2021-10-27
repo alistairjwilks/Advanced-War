@@ -70,10 +70,16 @@ class GameMap:
 
     def draw(self, x: int, y: int, console: Console):
         on_visible = "light" if self.visible[x, y] else "dark"
-        for entity in self.actors:
-            if (entity.x, entity.y) == (x, y) and entity.is_visible:
-                console.print(x, y, string=entity.char, fg=entity.color, bg=entity.bg_color)
-                return
+
+        if self.engine.render_mode != "terrain":
+            for entity in self.actors:
+                if (entity.x, entity.y) == (x, y) and entity.is_visible:
+                    if self.engine.render_mode == "hp":
+                        hp = "X" if entity.fighter.displayed_hp == 10 else str(entity.fighter.displayed_hp)
+                        console.print(x, y, string=hp, fg=entity.color, bg=entity.bg_color)
+                    else:
+                        console.print(x, y, string=entity.char, fg=entity.color, bg=entity.bg_color)
+                    return
         for structure in self.properties:
             if (structure.x, structure.y) == (x, y):
                 console.print(x, y, string=structure.char, fg=structure.color, bg=structure.bg_color)
@@ -92,7 +98,7 @@ class GameMap:
     def draw_highlighted(self, x: int, y: int, highlight_color: Tuple[int, int, int], console: Console):
         entity = self.unit_at(x, y)
         structure = self.structure_at(x, y)
-        if entity and entity.is_visible:
+        if entity and entity.is_visible and self.engine.render_mode != "terrain":
             console.print(x, y, string=entity.char, bg=highlight_color, fg=entity.color)
         elif structure:
             console.print(x, y, fg=structure.bg_color, bg = highlight_color, string=structure.char)
@@ -158,6 +164,10 @@ class GameMap:
         )
         """
         self.engine.update_fov()
+        if self.engine.render_mode == "terrain":
+            self.render_terrain(console)
+            self.draw_highlighted(self.engine.cursor.x, self.engine.cursor.y, (255, 255, 255), console)
+            return
         console.tiles_rgb[0:self.width, 0:self.height] = np.select(
             condlist=[self.no_fog or self.visible],
             choicelist=[self.tiles["light"]],
@@ -225,3 +235,32 @@ class GameMap:
         for structure in self.properties:
             if (structure.x, structure.y) == (x,y):
                 return structure
+
+    def render_terrain(self, console: Console):
+        self.engine.update_fov()
+        console.tiles_rgb[0:self.width, 0:self.height] = np.select(
+            condlist=[self.no_fog or self.visible],
+            choicelist=[self.tiles["light"]],
+            default=self.tiles["dark"]
+        )
+        for structure in self.properties:
+            if structure.team:
+                self.draw(structure.x, structure.y, console)
+
+        if self.engine.context:
+            self.engine.context.present(console)
+
+    def render_unit_hp(self, console: Console):
+        self.engine.update_fov()
+        console.tiles_rgb[0:self.width, 0:self.height] = np.select(
+            condlist=[self.no_fog or self.visible],
+            choicelist=[self.tiles["light"]],
+            default=self.tiles["dark"]
+        )
+        for structure in self.properties:
+            if structure.team:
+                self.draw(structure.x, structure.y, console)
+
+        if self.engine.context:
+            self.engine.context.present(console)
+

@@ -28,15 +28,7 @@ MOVE_KEYS = {
     tcod.event.K_KP_7: (-1, -1),
     tcod.event.K_KP_8: (0, -1),
     tcod.event.K_KP_9: (1, -1),
-    # Vi keys.
-    tcod.event.K_h: (-1, 0),
-    tcod.event.K_j: (0, 1),
-    tcod.event.K_k: (0, -1),
-    tcod.event.K_l: (1, 0),
-    tcod.event.K_y: (-1, -1),
-    tcod.event.K_u: (1, -1),
-    tcod.event.K_b: (-1, 1),
-    tcod.event.K_n: (1, 1),
+
 }
 
 WAIT_KEYS = {
@@ -56,6 +48,15 @@ SELECT_NEXT_KEYS = {
 ACTION_KEYS = {
     tcod.event.K_SPACE
 }
+
+HIDE_UNITS_KEYS = {
+    tcod.event.K_v
+}
+
+SHOW_HP_KEYS = {
+    tcod.event.K_h
+}
+
 
 END_TURN_KEYS = {
     tcod.event.K_RETURN,
@@ -120,6 +121,12 @@ class EventHandler(tcod.event.EventDispatch[Action]):
 
         elif key == tcod.event.K_ESCAPE:
             action = EscapeAction(cursor)
+
+        elif key in HIDE_UNITS_KEYS:
+            action = ShowTerrainAction(cursor)
+
+        elif key in SHOW_HP_KEYS:
+            action = ShowHpAction(cursor)
 
         # No valid key was pressed
         return action

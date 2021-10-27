@@ -225,6 +225,7 @@ class SelectAction(Action):
                     cursor.selection = entity
                 return
         cursor.selection = None
+        self.engine.render_mode = "move"
         return
 
 
@@ -255,6 +256,24 @@ class SelectNextAction(Action):
 class WaitAction(Action):
     def perform(self) -> None:
         pass
+
+
+class ShowTerrainAction(Action):
+    def perform(self) -> None:
+        if self.engine.render_mode == "terrain":
+            self.engine.render_mode = "move"
+            self.engine.cursor.selection = None
+        else:
+            self.engine.render_mode="terrain"
+
+
+class ShowHpAction(Action):
+    def perform(self) -> None:
+        if self.engine.render_mode == "hp":
+            self.engine.render_mode = "move"
+            self.engine.cursor.selection = None
+        else:
+            self.engine.render_mode = "hp"
 
 
 class UnitEndTurnAction(Action):
