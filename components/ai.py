@@ -8,7 +8,7 @@ from actions import Action, AttackAction, MovementAction, WaitAction, BumpAction
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
-    from entity import Actor
+    from entity import Actor, Structure
 
 
 class BaseAI(Action, BaseComponent):
@@ -51,3 +51,10 @@ class UnitAI(BaseAI):
     def perform(self) -> None:
         return UnitEndTurnAction(self.entity).perform()
 
+
+class StructureAI(BaseAI):
+    def __init__(self, entity: Structure):
+        super().__init__(entity)
+
+    def perform(self) -> None:
+        pass # do nothing for now

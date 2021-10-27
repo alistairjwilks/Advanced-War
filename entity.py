@@ -7,7 +7,7 @@ import tile_types
 from components.team import Team
 
 if TYPE_CHECKING:
-    from components.ai import BaseAI
+    from components.ai import BaseAI, StructureAI
     from components.fighter import Fighter
     from game_map import GameMap
 
@@ -159,6 +159,36 @@ class Actor(Entity):
             return True
         else:
             return super().is_visible
+
+
+class Structure(Entity):
+    def __init__(
+            self,
+            *,
+            x: int = 0,
+            y: int = 0,
+            char: str = "?",
+            team: Team = None,
+            name: str = "<Unnamed>",
+            ai_cls: Type[StructureAI] ,
+    ):
+        super().__init__(
+            x=x,
+            y=y,
+            char=char,
+            name=name,
+            blocks_movement=False,
+        )
+
+        self.ai: Optional[BaseAI] = ai_cls(self)
+        self.fighter = None
+        self.team = team
+
+    @property
+    def bg_color(self) -> Tuple[int, int, int]:
+        if self.team:
+            return self.team.bg_color
+        return self.tile[self.is_visible]["bg"]
 
 
 class Cursor(Entity):

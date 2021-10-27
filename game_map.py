@@ -6,7 +6,7 @@ from typing import Iterable, Iterator, Optional, TYPE_CHECKING, Tuple
 import numpy as np  # type: ignore
 from tcod.console import Console
 
-from entity import Actor, Cursor
+from entity import Actor, Cursor, Structure
 import tile_types
 
 if TYPE_CHECKING:
@@ -36,12 +36,12 @@ class GameMap:
         )
 
     @property
-    def units(self) -> Iterator[Actor]:
+    def properties(self) -> Iterator[Structure]:
         """ Iterate over the map's actors"""
         yield from (
-            entity
-            for entity in self.entities
-            if isinstance(entity, Actor) and entity.is_alive
+            structure
+            for structure in self.entities
+            if isinstance(structure, Structure)
         )
 
     def get_actor_at_location(self, x: int, y: int) -> Optional[Actor]:
@@ -70,9 +70,13 @@ class GameMap:
 
     def draw(self, x: int, y: int, console: Console):
         on_visible = "light" if self.visible[x, y] else "dark"
-        for entity in self.entities - {self.engine.cursor}:
+        for entity in self.actors:
             if (entity.x, entity.y) == (x, y) and entity.is_visible:
                 console.print(x, y, string=entity.char, fg=entity.color, bg=entity.bg_color)
+                return
+        for structure in self.properties:
+            if (structure.x, structure.y) == (x, y):
+                console.print(x, y, string=structure.char, fg=structure.color, bg=structure.bg_color)
                 return
 
         console.print(x=x, y=y,
@@ -80,22 +84,25 @@ class GameMap:
                       fg=tuple(self.tiles[x, y][on_visible]["fg"]),
                       bg=tuple(self.tiles[x, y][on_visible]["bg"]))
 
-    def entity_at(self, x, y) -> Optional[Entity]:
-        for entity in self.entities - {self.engine.cursor}:
+    def unit_at(self, x, y) -> Optional[Entity]:
+        for entity in self.actors:
             if (entity.x, entity.y) == (x, y):
                 return entity
 
     def draw_highlighted(self, x: int, y: int, highlight_color: Tuple[int, int, int], console: Console):
-        entity = self.entity_at(x, y)
+        entity = self.unit_at(x, y)
+        structure = self.structure_at(x, y)
         if entity and entity.is_visible:
             console.print(x, y, string=entity.char, bg=highlight_color, fg=entity.color)
+        elif structure:
+            console.print(x, y, fg=structure.bg_color, bg = highlight_color, string=structure.char)
         else:
             tile = self.tiles[x, y]["dark"]
             console.print(x, y, string=chr(tile["ch"]), fg=tuple(tile["fg"]), bg=highlight_color)
 
     def draw_inverted(self, x: int, y: int, console: Console):
         on_visible = "light" if self.visible[x, y] else "dark"
-        entity = self.entity_at(x, y)
+        entity = self.unit_at(x, y)
         if entity and entity.is_visible:
             console.print(x, y, string=entity.char, bg=entity.color, fg=entity.bg_color)
             return
@@ -156,8 +163,11 @@ class GameMap:
             choicelist=[self.tiles["light"]],
             default=self.tiles["dark"]
         )
+        for structure in self.properties:
+            if structure.team:
+                self.draw(structure.x, structure.y, console)
 
-        for entity in self.entities - {self.engine.cursor}:
+        for entity in self.actors:
             # Only show visible entities, and not the cursor
             if self.in_bounds(entity.x, entity.y):
                 if self.visible[entity.x, entity.y]:
@@ -210,3 +220,8 @@ class GameMap:
 
         self.draw_highlighted(cursor.x, cursor.y, (255, 255, 255), console)
         self.draw_selected(console)
+
+    def structure_at(self, x, y) -> Optional[Structure]:
+        for structure in self.properties:
+            if (structure.x, structure.y) == (x,y):
+                return structure

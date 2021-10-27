@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-import engine
 from maps import map_key
 
-import entity_factories
+from factories import unit_factories, structure_factories
 import tile_types
 from components import team
 
@@ -35,14 +34,18 @@ def generate_test_map(
         aw_map.tiles[i, 1:3] = tile_types.woods
         aw_map.tiles[i, aw_map.height - 1] = tile_types.mountain
 
-    entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=4)
-    entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=5)
-    entity_factories.tank(team.red_team).spawn(aw_map, x=4, y=6)
-    entity_factories.artillery(team.red_team).spawn(aw_map, x=3, y=5)
+    aw_map.tiles[5, 5] = tile_types.city
 
-    entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=4)
-    entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=5)
-    entity_factories.tank(team.blue_team).spawn(aw_map, x=13, y=6)
+    structure_factories.team_city(team.red_team).spawn(aw_map, x=5, y=5)
+
+    unit_factories.tank(team.red_team).spawn(aw_map, x=4, y=4)
+    unit_factories.tank(team.red_team).spawn(aw_map, x=4, y=5)
+    unit_factories.tank(team.red_team).spawn(aw_map, x=4, y=6)
+    unit_factories.artillery(team.red_team).spawn(aw_map, x=3, y=5)
+
+    unit_factories.tank(team.blue_team).spawn(aw_map, x=13, y=4)
+    unit_factories.tank(team.blue_team).spawn(aw_map, x=13, y=5)
+    unit_factories.tank(team.blue_team).spawn(aw_map, x=13, y=6)
     return aw_map
 
 

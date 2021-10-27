@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 import tcod
 
-import entity
-import tile_types
 from components import team
 from engine import Engine
-from entity import Cursor
-import entity_factories
-from procgen import read_map_awbw, generate_test_map
+from factories import unit_factories
+from procgen import generate_test_map
 
 
 def main() -> None:
@@ -17,7 +14,7 @@ def main() -> None:
     tileset = tcod.tileset.load_tilesheet(
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
-    cursor = entity_factories.player
+    cursor = unit_factories.player
     players = [team.red_team, team.blue_team]
     engine = Engine(cursor, players)
 
