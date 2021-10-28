@@ -11,7 +11,7 @@ city = Structure(
 
 
 def team_city(team: Team):
-    team_city = city
-    team_city.team = team
-    return team_city
+    this_city = city
+    this_city.team = team
+    return this_city
 

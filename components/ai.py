@@ -4,7 +4,7 @@ from typing import List, Tuple, TYPE_CHECKING
 import numpy as np
 import tcod
 
-from actions import Action, AttackAction, MovementAction, WaitAction, BumpAction, UnitEndTurnAction
+from actions import Action, AttackAction, MovementAction, WaitAction, BumpAction, UnitEndTurnAction, StructureStartTurnAction
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
@@ -57,4 +57,4 @@ class StructureAI(BaseAI):
         super().__init__(entity)
 
     def perform(self) -> None:
-        pass # do nothing for now
+        return StructureStartTurnAction(self.entity).perform()

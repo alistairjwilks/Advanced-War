@@ -8,7 +8,7 @@ import damage_table
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Entity, Cursor, Actor
+    from entity import Entity, Cursor, Actor, Structure
 
 
 class Action:
@@ -293,6 +293,18 @@ class EndTurnAction(Action):
         SelectNextAction.actorList = []
         SelectNextAction(self.entity).perform()
 
+
+class StructureStartTurnAction(Action):
+    def __init__(self, entity: Structure):
+        super().__init__(entity)
+        self.entity = entity
+
+    def perform(self) -> None:
+        if self.entity.team:
+            if self.entity.income:
+                self.entity.income.perform()
+            if self.entity.repair:
+                self.entity.repair.perform()
 
 
 class EnemyAction(Action):

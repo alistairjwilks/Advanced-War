@@ -90,7 +90,7 @@ class GameMap:
                       fg=tuple(self.tiles[x, y][on_visible]["fg"]),
                       bg=tuple(self.tiles[x, y][on_visible]["bg"]))
 
-    def unit_at(self, x, y) -> Optional[Entity]:
+    def unit_at(self, x, y) -> Optional[Actor]:
         for entity in self.actors:
             if (entity.x, entity.y) == (x, y):
                 return entity

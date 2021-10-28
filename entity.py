@@ -4,6 +4,7 @@ import copy
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING
 
 import tile_types
+from components.structure_components import Capturable, Income, Repair
 from components.team import Team
 
 if TYPE_CHECKING:
@@ -161,7 +162,7 @@ class Actor(Entity):
             return super().is_visible
 
 
-class Structure(Entity):
+class Structure(Entity):  # basic structure, will use components for the functionality
     def __init__(
             self,
             *,
@@ -170,7 +171,7 @@ class Structure(Entity):
             char: str = "?",
             team: Team = None,
             name: str = "<Unnamed>",
-            ai_cls: Type[StructureAI] ,
+            ai_cls: Type[StructureAI],
     ):
         super().__init__(
             x=x,
@@ -181,14 +182,62 @@ class Structure(Entity):
         )
 
         self.ai: Optional[BaseAI] = ai_cls(self)
-        self.fighter = None
         self.team = team
+        self.capturable = None
+        self.income = None
+        self.repair = None
+        self.passive = None
 
     @property
     def bg_color(self) -> Tuple[int, int, int]:
         if self.team:
             return self.team.bg_color
         return self.tile[self.is_visible]["bg"]
+
+
+class City(Structure):
+    def __init__(
+            self,
+            *,
+            x: int = 0,
+            y: int = 0,
+            team: Team = None,
+            ai_cls: Type[StructureAI] = StructureAI,
+    ):
+        super().__init__(x=x, y=y, char='$', name="City")
+        # components
+        self.capturable = Capturable(team)
+        self.capturable.entity = self
+        self.income = Income()
+        self.income.entity = self
+        self.repair = Repair(["inf", "mec", "tire", "tread"])
+        self.repair.entity = self
+
+
+class ProductionBuilding(Structure):
+    def __init__(
+            self,
+            *,
+            x: int = 0,
+            y: int = 0,
+            team: Team = None,
+            name: str = "<Unnamed>",
+            ai_cls: Type[StructureAI],
+    ):
+        super().__init__(x=x, y=y, char='$', name=name)
+        # components
+        self.capturable = Capturable()
+        self.income = Income()
+        self.repair = Repair(["inf", "mec", "tire", "tread"])
+        self.production = ProductionBuilding(["inf", "mec", "tire", "tread", "pipe"])
+
+
+class ComTower(Structure):
+    pass
+
+
+class MissileSilo(Structure):
+    pass
 
 
 class Cursor(Entity):
