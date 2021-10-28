@@ -4,13 +4,15 @@ import copy
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING
 
 import tile_types
-from components.structure_components import Capturable, Income, Repair
+
 from components.team import Team
 
 if TYPE_CHECKING:
     from components.ai import BaseAI, StructureAI
     from components.fighter import Fighter
+    from components.structure_components import Capturable, Income, Repair
     from game_map import GameMap
+
 
 T = TypeVar("T", bound="Entity")
 
@@ -202,7 +204,7 @@ class City(Structure):
             x: int = 0,
             y: int = 0,
             team: Team = None,
-            ai_cls: Type[StructureAI] = StructureAI,
+            ai_cls: Type[StructureAI],
     ):
         super().__init__(x=x, y=y, char='$', name="City")
         # components

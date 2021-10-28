@@ -10,6 +10,7 @@ from tcod.console import Console
 from components import team
 from components.team import Team
 from input_handlers import EventHandler
+from render_functions import render_bar
 
 if TYPE_CHECKING:
     from entity import Actor, Cursor
@@ -61,6 +62,16 @@ class Engine:
     def render(self, console: Console, context: Context) -> None:
         """ Now we just tell the map to render itself to our console, since it holds the entities now"""
         self.gamemap.render(console)
+
+        if self.cursor.selection:
+            render_bar(
+                console = console,
+                current_value=self.cursor.selection.fighter.displayed_hp,
+                max_value=10,
+                total_width=10
+            )
+        context.present(console)
+        # console.clear()
         # skip printing the player, we use a cursor inside of the map
 
     def next_player(self):

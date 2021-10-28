@@ -6,6 +6,7 @@ from typing import Iterable, Iterator, Optional, TYPE_CHECKING, Tuple
 import numpy as np  # type: ignore
 from tcod.console import Console
 
+import color
 from entity import Actor, Cursor, Structure
 import tile_types
 
@@ -134,8 +135,8 @@ class GameMap:
             y: int,
             console: Console,
             char: str = "!",
-            fg: Tuple[int, int, int] = (255, 255, 0),
-            bg: Tuple[int, int, int] = (255, 0, 0),
+            fg: Tuple[int, int, int] = color.yellow,
+            bg: Tuple[int, int, int] = color.red,
             time: float = 0.2
     ):
         console.print(x=x, y=y,
@@ -166,7 +167,7 @@ class GameMap:
         self.engine.update_fov()
         if self.engine.render_mode == "terrain":
             self.render_terrain(console)
-            self.draw_highlighted(self.engine.cursor.x, self.engine.cursor.y, (255, 255, 255), console)
+            self.draw_highlighted(self.engine.cursor.x, self.engine.cursor.y, color.white, console)
             return
         console.tiles_rgb[0:self.width, 0:self.height] = np.select(
             condlist=[self.no_fog or self.visible],
@@ -190,11 +191,11 @@ class GameMap:
             attack_tiles = []
             candidate_targets = []
 
-            highlight_attack = (255, 200, 200)  # light red
-            highlight_attack_blind = (125, 100, 100)  # dull red
-            highlight_move = (209, 224, 255)  # light blue
-            highlight_move_blind = (104, 112, 127)  # dull blue
-            highlight_target = (255, 0, 0)  # full red
+            # highlight_attack = (255, 200, 200)  # light red
+            # highlight_attack_blind = (125, 100, 100)  # dull red
+            # highlight_move = (209, 224, 255)  # light blue
+            # highlight_move_blind = (104, 112, 127)  # dull blue
+            # highlight_target = (255, 0, 0)  # full red
 
             if self.engine.render_mode == "move":
                 candidate_tiles = cursor.selection.fighter.calculate_move_range()
@@ -211,22 +212,22 @@ class GameMap:
 
             for tile in candidate_tiles:
                 if self.visible[tile]:
-                    self.draw_highlighted(*tile, highlight_color=highlight_move, console=console)
+                    self.draw_highlighted(*tile, highlight_color=color.highlight_move, console=console)
                 else:
-                    self.draw_highlighted(*tile, highlight_move_blind, console)
+                    self.draw_highlighted(*tile, color.highlight_move_blind, console)
             if any(attack_tiles):
                 for at_tile in attack_tiles:
                     if self.visible[at_tile]:
-                        self.draw_highlighted(*at_tile, highlight_attack, console)
+                        self.draw_highlighted(*at_tile, color.highlight_attack, console)
                     else:
-                        self.draw_highlighted(*at_tile, highlight_attack_blind, console)
+                        self.draw_highlighted(*at_tile, color.highlight_attack_blind, console)
             if any(candidate_targets):
                 for target in candidate_targets:
-                    self.draw_highlighted(*target, highlight_target, console)
+                    self.draw_highlighted(*target, color.highlight_target, console)
 
         if path and len(path) <= cursor.selection.fighter.movement:
             for tile in path:
-                self.draw_highlighted(*tile, highlight_color=(255, 200, 200), console=console)
+                self.draw_highlighted(*tile, highlight_color=color.highlight_move, console=console)
 
         self.draw_highlighted(cursor.x, cursor.y, (255, 255, 255), console)
         self.draw_selected(console)

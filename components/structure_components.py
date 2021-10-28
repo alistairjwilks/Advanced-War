@@ -1,8 +1,10 @@
 from collections import Set
+from typing import TYPE_CHECKING, Optional
 
+from entity import Entity, Actor
 from components.base_component import BaseComponent
 from components.team import Team
-from entity import Actor
+
 
 
 class Repair(BaseComponent):
@@ -14,12 +16,13 @@ class Repair(BaseComponent):
 
     def perform(self):
         unit: Actor = self.engine.gamemap.unit_at(self.entity.x, self.entity.y)
-        if unit.team.code == self.entity.team.code and unit.fighter.move_type in self.can_repair:
-            self.resupply(unit)
-            if unit.fighter.hp and unit.fighter.hp < 100:
-                self.repair(unit)
+        if unit:
+            if unit.team.code == self.entity.team.code and unit.fighter.move_type in self.can_repair:
+                self.resupply(unit)
+                if unit.fighter.hp and unit.fighter.hp < 100:
+                    self.repair(unit)
 
-    def repair(self, unit: Actor):
+    def repair(self, unit=None):
         if unit.fighter.hp < unit.fighter.max_hp:
             hp_repaired = max(20, unit.fighter.max_hp - unit.fighter.hp)
             repair_cost = min(unit.cost * hp_repaired / 100, unit.team.funds)
@@ -37,11 +40,8 @@ class Capturable(BaseComponent):
         self.team = team
         self.capture_points = 20
 
-    def capture(self, captor: Actor):
-
-
-    pass
-
+    def capture(self, captor: Optional[Actor]):
+        pass
 
 class Production(BaseComponent):
     pass
