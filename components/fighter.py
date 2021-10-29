@@ -179,6 +179,7 @@ class Fighter(BaseComponent):
         # todo CO Power meter
 
     def die(self):
+        self.engine.message_log.add_message(f"{self.team_code} {self.entity.name} is destroyed!")
         self.entity.ai = None
         self.engine.gamemap.entities.remove(self.entity)
 

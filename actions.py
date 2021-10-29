@@ -4,6 +4,7 @@ import math
 from time import sleep
 from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
+import color
 import damage_table
 
 if TYPE_CHECKING:
@@ -76,7 +77,6 @@ class AttackAction(ActionWithDirection):
         attacker_hp_mod = (attacker.fighter.displayed_hp / 10)
         defence_mod = (200 - (defender.fighter.defence + (
                     defender.fighter.terrain_defence * defender.fighter.displayed_hp))) / 100
-        print(f"{damage} * {attacker_hp_mod} * {defence_mod}")
         return math.ceil(damage * attacker_hp_mod * defence_mod)
 
     def attack(self, attacker: Actor, target: Actor) -> int:
@@ -109,8 +109,8 @@ class AttackAction(ActionWithDirection):
 
         damage = self.attack(attacker, target)
         if damage > 0:
-            print(
-                f"The {attacker.name}({attacker.fighter.hp}) does {damage} damage to {target.name}({target.fighter.hp})"
+            self.engine.message_log.add_message(
+                f"{attacker.team.code} {attacker.name} hits {target.team.code} {target.name} for {damage}"
             )
             attacker.fighter.attack_used = True
             attacker.fighter.move_used = True
@@ -118,8 +118,8 @@ class AttackAction(ActionWithDirection):
         if target.is_alive:
             retaliation = self.attack(target, attacker)
             if retaliation > 0:
-                print(
-                    f"The {target.name}({target.fighter.hp}) retaliates for {retaliation} on {attacker.name}({attacker.fighter.hp})"
+                self.engine.message_log.add_message(
+                    f"{target.team.code} {target.name} retaliates for {retaliation}"
                 )
                 self.engine.gamemap.flash(attacker.x, attacker.y, self.engine.root_console, '*')
 
@@ -140,6 +140,9 @@ class MoveStepAction(ActionWithDirection):
                 if StepAction(self.entity, *step).perform():
                     continue
                 else:
+                    self.engine.message_log.add_message(
+                        "Ambush!", fg=color.red
+                    )
                     print("Ambush!")
                     self.entity.fighter.move_used = True
                     self.entity.fighter.attack_used = True
@@ -287,6 +290,10 @@ class EndTurnAction(Action):
         super().__init__(entity)
 
     def perform(self) -> None:
+        self.engine.message_log.add_message(
+            f"{self.engine.active_player.code} turn ended",
+            fg=self.engine.active_player.fg_color
+        )
         self.engine.render_mode = "none"
         self.engine.cursor.selection = None
         self.engine.next_player()

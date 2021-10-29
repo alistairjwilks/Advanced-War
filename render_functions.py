@@ -3,9 +3,26 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import color
+from entity import Cursor
 
 if TYPE_CHECKING:
     from tcod import Console
+
+
+def render_coordinates(
+        console: Console,
+        cursor: Cursor,
+        position_x,
+        position_y
+) -> None:
+    console.print(
+        x=position_x, y=position_y, string=f"({cursor.x+1},{cursor.y+1})"
+    )
+
+
+def render_panel():
+    pass
+
 
 
 def render_bar(
@@ -25,5 +42,5 @@ def render_bar(
         )
 
     console.print(
-        x=position_x+1, y=position_y, string=f"HP: {current_value}", fg=color.bar_text
+        x=position_x + 1, y=position_y, string=f"HP: {current_value}", fg=color.bar_text
     )

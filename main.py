@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import tcod
 
+import color
 from components import team
 from engine import Engine
 from factories import unit_factories
@@ -8,8 +9,9 @@ from procgen import generate_test_map
 
 
 def main() -> None:
-    screen_width = 45
-    screen_height = 35
+    screen_width = 60
+    screen_height = 40
+    info_panel_width = 20
 
     tileset = tcod.tileset.load_tilesheet(
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
@@ -25,6 +27,10 @@ def main() -> None:
     )
     cursor.place(engine.gamemap.width // 2, engine.gamemap.height // 2, engine.gamemap)
     engine.update_fov()
+
+    engine.message_log.add_message(
+        "Welcome, commander", fg=color.white
+    )
 
     with tcod.context.new_terminal(
             screen_width,

@@ -7,11 +7,12 @@ from typing import TYPE_CHECKING, Iterable
 from tcod.context import Context
 from tcod.console import Console
 
+import render_functions
 from components import team
 from components.team import Team
 from input_handlers import EventHandler
 from render_functions import render_bar
-
+from message_log import MessageLog
 if TYPE_CHECKING:
     from entity import Actor, Cursor
     from game_map import GameMap
@@ -26,6 +27,7 @@ class Engine:
     def __init__(self, player: Cursor, players: Iterable[Team], render_mode: str = "none"):
         self.cursor = player
         self.event_handler: EventHandler = EventHandler(self)
+        self.message_log = MessageLog()
         self.render_mode = render_mode
         self.player_list = players
         self.remaining_players = queue.Queue(maxsize=len(players))
@@ -61,7 +63,16 @@ class Engine:
 
     def render(self, console: Console, context: Context) -> None:
         """ Now we just tell the map to render itself to our console, since it holds the entities now"""
+        console.clear()
         self.gamemap.render(console)
+
+        self.message_log.render(
+            console,
+            x=40,
+            y=35,
+            width=20,
+            height=5
+        )
 
         if self.cursor.selection:
             render_bar(
@@ -70,6 +81,8 @@ class Engine:
                 max_value=10,
                 total_width=10
             )
+
+        render_functions.render_coordinates(console, self.cursor, 0, console.height-1)
         context.present(console)
         # console.clear()
         # skip printing the player, we use a cursor inside of the map
