@@ -6,12 +6,12 @@ from typing import Tuple, List
 import numpy as np
 
 from components.base_component import BaseComponent
-from entity import Entity
+from entity import Entity, Actor
 from game_map import GameMap
 
 
 class Fighter(BaseComponent):
-
+    parent: Actor
     def __init__(self,
                  hp: int = 100,
                  movement: int = 3,
@@ -85,66 +85,63 @@ class Fighter(BaseComponent):
     def damage_mod(self) -> float:
         # each CO will have a set of offence modifiers for each unit, with a lookup like the damage table
         try:
-            return self.entity.team.damage_mod[self.code]
+            return self.parent.team.damage_mod[self.code]
         except KeyError:
             return 1.0
 
     @property
     def defence(self):
         try:
-            return self.entity.team.defence_mod[self.code]
+            return self.parent.team.defence_mod[self.code]
         except KeyError:
             return 100
 
     @property
     def terrain_defence(self) -> int:
-        x, y = self.entity.x, self.entity.y
-        return self.entity.gamemap.tiles[x, y]["defence"]
+        x, y = self.parent.x, self.parent.y
+        return self.gamemap.tiles[x, y]["defence"]
 
     @property
     def team_code(self) -> str:
-        return self.entity.team.code
+        return self.parent.team.code
 
     @property
     def gamemap(self) -> GameMap:
-        return self.entity.gamemap
+        return self.parent.gamemap
 
     def move(self, dx, dy) -> None:
-        if (self.entity.x + dx, self.entity.y + dy) in self.move_range:
+        if (self.parent.x + dx, self.parent.y + dy) in self.move_range:
             cost, path = self.path_cost(dx, dy)
-            self.entity.x += dx
-            self.entity.y += dy
+            self.parent.x += dx
+            self.parent.y += dy
             self.move_used = True
             self._fuel -= cost
             # print(cost, path)
-            print(self.entity.name + " fuel:" + str(self._fuel))
+            print(self.parent.name + " fuel:" + str(self._fuel))
             self.calculate_move_range()
 
     def path_cost(self, dx, dy) -> (int, List[Tuple[int, int]]):
-        path = self.entity.ai.get_path_to(self.entity.x + dx, self.entity.y + dy)
-        # print(f"moving from {self.entity.x, self.entity.y} to {self.entity.x + dx, self.entity.y + dy}")
-        # print(path)
+        path = self.parent.ai.get_path_to(self.parent.x + dx, self.parent.y + dy)
         cost = sum(self.engine.gamemap.tiles[step[0], step[1]]["move"][self.move_type] for step in path)
-        # print(cost)
         return cost, path
 
     def calculate_move_range(self) -> List[Tuple[int, int]]:
-        candidate_tiles: List[Tuple[int, int]] = [(self.entity.x, self.entity.y)]
+        candidate_tiles: List[Tuple[int, int]] = [(self.parent.x, self.parent.y)]
 
         if not self.move_used:  # one move per turn
             max_tiles = min(self.movement, self._fuel)
             for dx in range(-max_tiles, max_tiles + 1):
                 for dy in range(-max_tiles, max_tiles + 1):
                     if abs(dx) + abs(dy) <= max_tiles:
-                        if self.engine.gamemap.in_bounds(self.entity.x + dx, self.entity.y + dy):
+                        if self.engine.gamemap.in_bounds(self.parent.x + dx, self.parent.y + dy):
                             if 0 < self.path_cost(dx, dy)[0] <= max_tiles:
-                                candidate_tiles.append((self.entity.x + dx, self.entity.y + dy))
+                                candidate_tiles.append((self.parent.x + dx, self.parent.y + dy))
 
         self.move_range = candidate_tiles
         return self.move_range
 
     def is_in_range(self, target: Entity) -> bool:
-        if self.min_range <= abs(self.entity.x - target.x) + abs(self.entity.y - target.y) <= self.atk_range:
+        if self.min_range <= abs(self.parent.x - target.x) + abs(self.parent.y - target.y) <= self.atk_range:
             return True
         return False
 
@@ -178,10 +175,22 @@ class Fighter(BaseComponent):
             self.die()
         # todo CO Power meter
 
+    def repair(self, amount: int) -> int:
+        if self.hp == self.max_hp:
+            return 0
+
+        new_hp = self.hp + amount
+        if new_hp > self.max_hp:
+            amount =
+
     def die(self):
-        self.engine.message_log.add_message(f"{self.team_code} {self.entity.name} is destroyed!")
-        self.entity.ai = None
-        self.engine.gamemap.entities.remove(self.entity)
+        self.engine.message_log.add_message(f"{self.team_code} {self.parent.name} is destroyed!")
+        self.parent.ai = None
+        self.engine.gamemap.entities.remove(self.parent)
+
+    def resupply(self):
+        self.ammo = self.ammo_max
+        self.fuel = self.fuel_max
 
 
 class IndirectFighter(Fighter):
@@ -190,7 +199,7 @@ class IndirectFighter(Fighter):
         for dx in range(-self.atk_range, self.atk_range + 1):
             for dy in range(-self.atk_range, self.atk_range + 1):
                 if self.min_range <= abs(dx) + abs(dy) <= self.atk_range:
-                    if self.engine.gamemap.in_bounds(self.entity.x + dx, self.entity.y + dy):
-                        candidate_tiles.append((self.entity.x + dx, self.entity.y + dy))
+                    if self.engine.gamemap.in_bounds(self.parent.x + dx, self.parent.y + dy):
+                        candidate_tiles.append((self.parent.x + dx, self.parent.y + dy))
         return candidate_tiles
 

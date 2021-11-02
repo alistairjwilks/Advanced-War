@@ -20,7 +20,7 @@ class Action:
     @property
     def engine(self) -> Engine:
         """ Return the engine I belong to """
-        return self.entity.gamemap.engine
+        return self.entity.parent.engine
 
     def perform(self) -> None:
         """Perform this action with the objects needed to determine its scope.
@@ -172,17 +172,17 @@ class StepAction(ActionWithDirection):
     def perform(self) -> bool:
         start_x, start_y = self.entity.x, self.entity.y
         self.engine.gamemap.draw(self.entity.x, self.entity.y, self.engine.root_console)
-        self.entity.gamemap.quick_render(self.engine.root_console)
+        self.entity.parent.quick_render(self.engine.root_console)
         sleep(0.1)
-        actor = self.entity.gamemap.get_actor_at_location(self.dx, self.dy)
+        actor = self.entity.parent.get_actor_at_location(self.dx, self.dy)
         if actor and actor.team.code != self.entity.team.code:  # ambush!
-            self.entity.gamemap.flash(actor.x, actor.y, self.engine.root_console)
+            self.entity.parent.flash(actor.x, actor.y, self.engine.root_console)
             return False
         else:
             self.entity.x, self.entity.y = self.dx, self.dy
-            self.entity.gamemap.draw(self.entity.x, self.entity.y, self.engine.root_console)
-            self.entity.gamemap.draw(start_x, start_y, self.engine.root_console)
-            self.entity.gamemap.quick_render(self.engine.root_console)
+            self.entity.parent.draw(self.entity.x, self.entity.y, self.engine.root_console)
+            self.entity.parent.draw(start_x, start_y, self.engine.root_console)
+            self.entity.parent.quick_render(self.engine.root_console)
             return True
 
 
@@ -267,7 +267,7 @@ class ShowTerrainAction(Action):
             self.engine.render_mode = "move"
             self.engine.cursor.selection = None
         else:
-            self.engine.render_mode="terrain"
+            self.engine.render_mode = "terrain"
 
 
 class ShowHpAction(Action):

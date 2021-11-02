@@ -28,6 +28,10 @@ class GameMap:
         # self.explored = np.full((width, height), fill_value=False, order="F")  # track tiles we've seen - not for AW
 
     @property
+    def gamemap(self) -> GameMap:
+        return self
+
+    @property
     def actors(self) -> Iterator[Actor]:
         """ Iterate over the map's actors"""
         yield from (

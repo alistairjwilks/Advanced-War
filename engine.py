@@ -10,8 +10,8 @@ from tcod.console import Console
 import render_functions
 from components import team
 from components.team import Team
-from input_handlers import EventHandler
-from render_functions import render_bar
+from input_handlers import EventHandler, MainGameEventHandler
+from render_functions import render_stats
 from message_log import MessageLog
 if TYPE_CHECKING:
     from entity import Actor, Cursor
@@ -26,8 +26,9 @@ class Engine:
 
     def __init__(self, player: Cursor, players: Iterable[Team], render_mode: str = "none"):
         self.cursor = player
-        self.event_handler: EventHandler = EventHandler(self)
+        self.event_handler: EventHandler = MainGameEventHandler(self)
         self.message_log = MessageLog()
+        self.mouse_location = (0,0)
         self.render_mode = render_mode
         self.player_list = players
         self.remaining_players = queue.Queue(maxsize=len(players))
@@ -61,11 +62,13 @@ class Engine:
         # no exploration in AW
         # self.gamemap.explored |= self.gamemap.visible
 
-    def render(self, console: Console, context: Context) -> None:
+    def render(self, console: Console) -> None:
         """ Now we just tell the map to render itself to our console, since it holds the entities now"""
         console.clear()
         self.gamemap.render(console)
+        render_functions.render_unit_panel(console, self.cursor)
 
+        render_functions.render_quick_info(console, self.cursor, 0, console.height - 1)
         self.message_log.render(
             console,
             x=40,
@@ -74,18 +77,7 @@ class Engine:
             height=5
         )
 
-        if self.cursor.selection:
-            render_bar(
-                console = console,
-                current_value=self.cursor.selection.fighter.displayed_hp,
-                max_value=10,
-                total_width=10
-            )
 
-        render_functions.render_coordinates(console, self.cursor, 0, console.height-1)
-        context.present(console)
-        # console.clear()
-        # skip printing the player, we use a cursor inside of the map
 
     def next_player(self):
         print(self.active_player.name)

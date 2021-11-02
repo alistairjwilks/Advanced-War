@@ -68,19 +68,36 @@ class EventHandler(tcod.event.EventDispatch[Action]):
     def __init__(self, engine: Engine):
         self.engine = engine
 
-    def handle_events(self) -> bool:
+    def handle_events(self, context: tcod.context.Context) -> None:
         for event in tcod.event.wait():
+            context.convert_event(event)
+            self.dispatch(event)
+
+    def on_render(self, console: tcod.Console) -> None:
+        self.engine.render(console)
+
+    def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
+        if self.engine.gamemap.in_bounds(event.tile.x, event.tile.y):
+            self.engine.cursor.move_to(event.tile.x, event.tile.y)
+
+    def ev_quit(self, console: tcod.Console):
+        raise SystemExit
+
+
+
+class MainGameEventHandler(EventHandler):
+    def handle_events(self, context: tcod.context.Context) -> None:
+        for event in tcod.event.wait():
+            context.convert_event(event)
+
             action = self.dispatch(event)
-            did_action = False
+
             if action is None:
                 continue
 
             action.perform()
-            did_action = True
-            #            self.engine.handle_enemy_turns()
 
-            self.engine.update_fov()  # ?
-            return did_action
+            self.engine.update_fov()
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
         raise SystemExit()

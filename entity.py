@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import copy
-from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING
+from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, List
 
 import tile_types
 
@@ -10,7 +10,7 @@ from components.team import Team
 if TYPE_CHECKING:
     from components.ai import BaseAI, StructureAI
     from components.fighter import Fighter
-    from components.structure_components import Capturable, Income, Repair
+    from components.structure_components import Capturable, Income, Repair, Production
     from game_map import GameMap
 
 
@@ -21,11 +21,11 @@ class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
-    gamemap: GameMap
+    parent: GameMap
 
     def __init__(
             self,
-            gamemap: GameMap = None,
+            parent: Optional[GameMap] = None,
             x: int = 0,
             y: int = 0,
             char: str = "?",
@@ -41,9 +41,9 @@ class Entity:
         self.color = color
         self.name = name
         self.blocks_movement = blocks_movement
-        self.gamemap = gamemap
-        if self.gamemap:
-            self.gamemap.entities.add(self)
+        if parent:
+            self.parent = parent
+            parent.entities.add(self)
         self.selection = None
         self.vision = 0
 
@@ -56,8 +56,12 @@ class Entity:
         return self.gamemap.tiles[self.x, self.y]
 
     @property
+    def gamemap(self) -> GameMap:
+        return self.parent.gamemap
+
+    @property
     def bg_color(self) -> Tuple[int, int, int]:
-        if self.gamemap.visible[self.x, self.y]:
+        if self.parent.visible[self.x, self.y]:
             return tuple(self.tile["light"]["bg"])
         else:
             return tuple(self.tile["dark"]["bg"])
@@ -67,7 +71,7 @@ class Entity:
         clone = copy.deepcopy(self)
         clone.x = x
         clone.y = y
-        clone.gamemap = gamemap
+        clone.parent = gamemap
         gamemap.entities.add(clone)
         return clone
 
@@ -76,10 +80,11 @@ class Entity:
         self.x = x
         self.y = y
         if gamemap:  # if a new map is given
-            if self.gamemap:  # if we are already on a map
-                self.gamemap.entities.remove(self)  # remove ourself from it
+            if hasattr(self, "parent"):  # possibly uninitialised
+                if self.parent is self.gamemap:
+                    self.gamemap.entities.remove(self)  # remove ourself from it
             # then set current map to the given map
-            self.gamemap = gamemap
+            self.parent = gamemap
             gamemap.entities.add(self)
 
     def move(self, dx: int, dy: int) -> None:
@@ -124,7 +129,7 @@ class Actor(Entity):
         self.ai: Optional[BaseAI] = ai_cls(self)
         self.cost = cost
         self.fighter = fighter
-        self.fighter.entity = self
+        self.fighter.parent = self
         self.vision = fighter.vision
         self.team = team
 
@@ -143,7 +148,7 @@ class Actor(Entity):
 
     @property
     def bg_color(self) -> Tuple[int, int, int]:
-        if self.active or self.gamemap.engine.active_player.code != self.team.code:
+        if self.active or self.parent.engine.active_player.code != self.team.code:
             super().bg_color
         else:
             return 160, 160, 160
@@ -225,13 +230,15 @@ class ProductionBuilding(Structure):
             team: Team = None,
             name: str = "<Unnamed>",
             ai_cls: Type[StructureAI],
+            repair: List[str] = ["inf", "mec", "tire", "tread"],
+            production: List[str] = ["inf", "mec", "tire", "tread", "pipe"]
     ):
         super().__init__(x=x, y=y, char='$', name=name)
         # components
         self.capturable = Capturable()
         self.income = Income()
-        self.repair = Repair(["inf", "mec", "tire", "tread"])
-        self.production = ProductionBuilding(["inf", "mec", "tire", "tread", "pipe"])
+        self.repair = Repair(repair)
+        self.production = Production(production)
 
 
 class ComTower(Structure):

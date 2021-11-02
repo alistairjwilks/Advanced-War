@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from entity import Actor, Structure
 
 
-class BaseAI(Action, BaseComponent):
+class BaseAI(Action):
     entity: Actor
 
     def perform(self) -> None:
@@ -23,9 +23,9 @@ class BaseAI(Action, BaseComponent):
         otherwise return an empty list
         """
 
-        cost = np.array(self.entity.gamemap.tiles["move"][self.entity.move_type], dtype=np.int8)
+        cost = np.array(self.entity.parent.tiles["move"][self.entity.move_type], dtype=np.int8)
 
-        for entity in self.entity.gamemap.entities:
+        for entity in self.entity.parent.entities:
             # for entities on valid tiles that block us, and we can see them
             if entity.blocks_movement and \
                     entity.team and \
